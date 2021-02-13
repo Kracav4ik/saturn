@@ -12,8 +12,6 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
-set(EXE_NAME saturn)
-
 set(QT_LIBS
         Qt5::Core
         Qt5::Widgets
@@ -21,22 +19,5 @@ set(QT_LIBS
 
 include_directories(.)
 
-set(EXE_SOURCES
-        main.cpp
-        MainWindow.h
-        MainWindow.cpp
-)
-
-add_executable(${EXE_NAME} ${EXE_SOURCES})
-target_link_libraries(${EXE_NAME} ${QT_LIBS})
-
-# Copy required dlls
-add_custom_command(
-        TARGET ${EXE_NAME} POST_BUILD
-        COMMAND $ENV{QTDIR}/bin/windeployqt.exe
-                --no-svg
-                --no-translations
-                --no-opengl-sw
-                --no-system-d3d-compiler
-                $<TARGET_FILE:${EXE_NAME}>
-)
+add_subdirectory(OpenLL)
+add_subdirectory(testbed)
