@@ -5,6 +5,8 @@ set(LIBRARY_SOURCES
         DrawAPI.h
         Framebuffer.cpp
         Framebuffer.h
+        Triangle.h
+        Vector4.h
 )
 
 add_library(open_ll ${LIBRARY_SOURCES})

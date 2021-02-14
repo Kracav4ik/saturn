@@ -18,6 +18,8 @@ public:
     std::vector<uint32_t> getColorsARGB32() const;
 
 private:
+    Color& at(int x, int y);
+
     int w;
     int h;
     std::vector<Color> colors;

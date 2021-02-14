@@ -15,7 +15,9 @@ MainWindow::MainWindow()
     connect(&timer, &QTimer::timeout, [this]() {
         using namespace std::chrono;
 
-        static int i = 0;
+        static ll::DrawAPI drawAPi;
+
+        static size_t i = 0;
         qDebug() << "frame" << i;
 
         struct profile_info {
@@ -41,12 +43,27 @@ MainWindow::MainWindow()
                 {1, 0, 0, 0},
         };
 
-        ll::DrawAPI::clear(fb, cls[i++ % cls.size()]);
+        drawAPi.setFragmentShader([&](int x, int y) {
+            return ll::Color(0, 1, 1);
+        });
+        drawAPi.reset();
+
+        drawAPi.clear(fb, cls[i++ % cls.size()]);
         push_prof("fill done");
+
+        drawAPi.addTriangles({
+            ll::Triangle{{
+                {20, 200, 0, 0},
+                {400, 400, 0, 0},
+                {600, 20, 0, 0},
+            }},
+        });
+        drawAPi.drawFrame(fb);
+        push_prof("frame draw");
 
         static std::vector<uint32_t> pixels;
         pixels = fb.getColorsARGB32();
-        push_prof("i->f convert");
+        push_prof("ARGB32 convert");
 
         static QImage img;
         img = QImage((const uchar*)pixels.data(), fb.getW(), fb.getH(), QImage::Format_ARGB32);

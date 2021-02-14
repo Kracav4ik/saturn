@@ -29,3 +29,7 @@ std::vector<uint32_t> Framebuffer::getColorsARGB32() const {
     }
     return result;
 }
+
+Color& Framebuffer::at(int x, int y) {
+    return colors[y * w + x];
+}
