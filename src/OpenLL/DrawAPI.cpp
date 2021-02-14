@@ -17,8 +17,12 @@ bool edge(const Vector4& p, const Vector4& v1, const Vector4& v2) {
     return (p.x - v1.x) * (v2.y - v1.y) - (p.y - v1.y) * (v2.x - v1.x) >= 0;
 }
 
-void collectFrags(int w, int h, std::vector<FragmentLine>& frags, const Triangle& triangle) {
-    const auto& v = triangle.points;
+void collectFrags(int w, int h, std::vector<FragmentLine>& frags, const Triangle& triangle, const Matrix4x4& transform) {
+    Vector4 v[3] = {
+            transform * triangle.points[0],
+            transform * triangle.points[1],
+            transform * triangle.points[2],
+    };
     Vector4 leftTop{static_cast<float>(w), static_cast<float>(h), 0, 0};
     Vector4 rightBottom{0, 0, 0, 0};
     for (int i = 0; i < 3; ++i) {
@@ -67,6 +71,7 @@ void DrawAPI::setFragmentShader(Shader shader) {
 
 void DrawAPI::reset() {
     objects.clear();
+    loadIdentity();
 }
 
 void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
@@ -80,13 +85,35 @@ void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
 void DrawAPI::drawFrame(Framebuffer& fb) const {
     std::vector<FragmentLine> fragments;
 
+    auto transform = getMatrix();
     for (const auto& object : objects) {
-        collectFrags(fb.getW(), fb.getH(), fragments, object);
+        collectFrags(fb.getW(), fb.getH(), fragments, object, transform);
     }
 
     for (const auto& frag : fragments) {
         for (int x = frag.x0; x <= frag.x1; ++x) {
-            fb.at(x, frag.y) = fragmentShader(x, frag.y);
+            fb.at(x, frag.y) = fragmentShader(x/static_cast<float>(fb.getW()), (fb.getH() - frag.y)/static_cast<float>(fb.getH()));
         }
+    }
+}
+
+void DrawAPI::loadIdentity() {
+    auto s = std::stack<Matrix4x4>();
+    stack.swap(s);
+}
+
+void DrawAPI::pushMatrix(const Matrix4x4& mat) {
+    stack.push(getMatrix() * mat);
+}
+
+void DrawAPI::popMatrix() {
+    stack.pop();
+}
+
+Matrix4x4 DrawAPI::getMatrix() const {
+    if (stack.empty()) {
+        return Matrix4x4::identity();
+    } else {
+        return stack.top();
     }
 }

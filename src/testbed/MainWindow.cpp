@@ -10,7 +10,7 @@ MainWindow::MainWindow()
 {
     setupUi(this);
 
-    timer.setInterval(1000);
+    timer.setInterval(100);
     timer.start();
     connect(&timer, &QTimer::timeout, [this]() {
         using namespace std::chrono;
@@ -43,19 +43,25 @@ MainWindow::MainWindow()
                 {1, 0, 0, 0},
         };
 
-        drawAPi.setFragmentShader([&](int x, int y) {
-            return ll::Color(0, 1, 1);
+        drawAPi.setFragmentShader([&](float x, float y) {
+            return ll::Color(x, y, 0);
         });
         drawAPi.reset();
 
-        drawAPi.clear(fb, cls[i++ % cls.size()]);
+        drawAPi.clear(fb, cls[i++ / 10 % cls.size()]);
         push_prof("fill done");
+
+        static float a = 0;
+        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 0, 0));
+        drawAPi.pushMatrix(ll::Matrix4x4::rotY(a));
+        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, 0, 0));
+        a += 0.3;
 
         drawAPi.addTriangles({
             ll::Triangle{{
-                {20, 200, 0, 0},
-                {400, 400, 0, 0},
-                {600, 20, 0, 0},
+                {20, 200, 0, 1},
+                {400, 400, 0, 1},
+                {600, 20, 0, 1},
             }},
         });
         drawAPi.drawFrame(fb);

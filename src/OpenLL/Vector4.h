@@ -17,6 +17,14 @@ struct Vector4 {
     static Vector4 zero() {
         return {0, 0, 0, 0};
     }
+
+    static Vector4 position(const Vector4& v) {
+        return {v.x, v.y, v.z, 1};
+    }
+
+    static Vector4 direction(const Vector4& v) {
+        return {v.x, v.y, v.z, 0 };
+    }
 };
 
 inline Vector4 operator-(const Vector4& v) {
