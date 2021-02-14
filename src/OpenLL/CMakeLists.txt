@@ -5,6 +5,7 @@ set(LIBRARY_SOURCES
         DrawAPI.h
         Framebuffer.cpp
         Framebuffer.h
+        Matrix4x4.h
         Triangle.h
         Vector4.h
 )
