@@ -31,10 +31,10 @@ void collectFrags(int w, int h, std::vector<FragmentLine>& frags, const Triangle
         rightBottom.x = std::max(rightBottom.x, v[i].x);
         rightBottom.y = std::max(rightBottom.y, v[i].y);
     }
-    int bbMinX = static_cast<int>(floorf(leftTop.x));
-    int bbMinY = static_cast<int>(floorf(leftTop.y));
-    int bbMaxX = static_cast<int>(ceilf(rightBottom.x));
-    int bbMaxY = static_cast<int>(ceilf(rightBottom.y));
+    int bbMinX = std::max(0, static_cast<int>(floorf(leftTop.x)));
+    int bbMinY = std::max(0, static_cast<int>(floorf(leftTop.y)));
+    int bbMaxX = std::min(w - 1, static_cast<int>(ceilf(rightBottom.x)));
+    int bbMaxY = std::min(h - 1, static_cast<int>(ceilf(rightBottom.y)));
 
     for (int y = bbMinY; y <= bbMaxY; ++y) {
         int xFragStart;

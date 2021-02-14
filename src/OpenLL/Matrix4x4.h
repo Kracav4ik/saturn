@@ -65,11 +65,11 @@ struct Matrix4x4 {
     }
 
     static Matrix4x4 translation(float x, float y, float z) {
-        return translation({x, y, z, 0});
+        return translation(Vector4::direction(x, y, z));
     }
 
     static Matrix4x4 scale(float x, float y, float z) {
-        return scale({x, y, z, 0});
+        return scale(Vector4::direction(x, y, z));
     }
 
     static Matrix4x4 scale(const Vector4& v) {

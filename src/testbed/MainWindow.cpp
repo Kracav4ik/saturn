@@ -36,11 +36,11 @@ MainWindow::MainWindow()
         };
 
         static const std::vector<ll::Color> cls = {
-                {1, 1, 0, 0},
-                {1, 1, 0.5, 0},
-                {1, 1, 1, 0},
-                {1, 0, 1, 0},
-                {1, 0, 0, 0},
+                ll::Color(1, 0, 0),
+                ll::Color(1, 0.5, 0),
+                ll::Color(1, 1, 0),
+                ll::Color(0, 1, 0),
+                ll::Color(0, 0, 0),
         };
 
         drawAPi.setFragmentShader([&](float x, float y) {
@@ -52,16 +52,16 @@ MainWindow::MainWindow()
         push_prof("fill done");
 
         static float a = 0;
-        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 0, 0));
-        drawAPi.pushMatrix(ll::Matrix4x4::rotY(a));
-        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, 0, 0));
+        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 240, 0));
+        drawAPi.pushMatrix(ll::Matrix4x4::rotZ(a));
+        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, -240, 0));
         a += 0.3;
 
         drawAPi.addTriangles({
             ll::Triangle{{
-                {20, 200, 0, 1},
-                {400, 400, 0, 1},
-                {600, 20, 0, 1},
+                ll::Vector4::position(20, 200, 0),
+                ll::Vector4::position(400, 400, 0),
+                ll::Vector4::position(600, 20, 0),
             }},
         });
         drawAPi.drawFrame(fb);

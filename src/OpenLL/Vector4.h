@@ -9,7 +9,6 @@ struct Vector4 {
             float y;
             float z;
             float t;
-
         };
         float data[4];
     };
@@ -18,12 +17,12 @@ struct Vector4 {
         return {0, 0, 0, 0};
     }
 
-    static Vector4 position(const Vector4& v) {
-        return {v.x, v.y, v.z, 1};
+    static Vector4 position(float x, float y, float z) {
+        return {x, y, z, 1};
     }
 
-    static Vector4 direction(const Vector4& v) {
-        return {v.x, v.y, v.z, 0 };
+    static Vector4 direction(float x, float y, float z) {
+        return {x, y, z, 0 };
     }
 };
 
