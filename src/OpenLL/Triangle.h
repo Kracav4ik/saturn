@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Vector4.h"
+#include "Vertex.h"
 
 namespace ll {
 
 struct Triangle {
-    Vector4 points[3];
+    Vertex points[3];
 };
 
 }

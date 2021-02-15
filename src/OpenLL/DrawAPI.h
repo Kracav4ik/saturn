@@ -12,7 +12,7 @@ namespace ll {
 class Framebuffer;
 class Color;
 
-using Shader = std::function<Color(float, float)>;
+using Shader = std::function<Color(const Vertex&)>;
 
 class DrawAPI {
 public:
@@ -32,6 +32,7 @@ public:
 
 private:
     Matrix4x4 getMatrix() const;
+    static void processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, const Shader& shader);
 
     Shader fragmentShader;
     std::vector<Triangle> objects;

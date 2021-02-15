@@ -43,8 +43,8 @@ MainWindow::MainWindow()
                 ll::Color(0, 0, 0),
         };
 
-        drawAPi.setFragmentShader([&](float x, float y) {
-            return ll::Color(x, y, 0);
+        drawAPi.setFragmentShader([&](const ll::Vertex& vert) {
+            return vert.color;
         });
         drawAPi.reset();
 
@@ -59,9 +59,9 @@ MainWindow::MainWindow()
 
         drawAPi.addTriangles({
             ll::Triangle{{
-                ll::Vector4::position(20, 200, 0),
-                ll::Vector4::position(400, 400, 0),
-                ll::Vector4::position(600, 20, 0),
+                {ll::Color(1, 0, 0), ll::Vector4::position(20, 200, 0)},
+                {ll::Color(0, 1, 0), ll::Vector4::position(400, 400, 0)},
+                {ll::Color(0, 0, 1), ll::Vector4::position(600, 20, 0)},
             }},
         });
         drawAPi.drawFrame(fb);

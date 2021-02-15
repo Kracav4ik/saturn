@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
         Matrix4x4.h
         Triangle.h
         Vector4.h
+        Vertex.h
 )
 
 add_library(open_ll ${LIBRARY_SOURCES})

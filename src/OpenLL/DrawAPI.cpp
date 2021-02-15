@@ -7,60 +7,8 @@ using namespace ll;
 
 namespace {
 
-struct FragmentLine {
-    int x0;
-    int x1;
-    int y;
-};
-
-bool edge(const Vector4& p, const Vector4& v1, const Vector4& v2) {
-    return (p.x - v1.x) * (v2.y - v1.y) - (p.y - v1.y) * (v2.x - v1.x) >= 0;
-}
-
-void collectFrags(int w, int h, std::vector<FragmentLine>& frags, const Triangle& triangle, const Matrix4x4& transform) {
-    Vector4 v[3] = {
-            transform * triangle.points[0],
-            transform * triangle.points[1],
-            transform * triangle.points[2],
-    };
-    Vector4 leftTop{static_cast<float>(w), static_cast<float>(h), 0, 0};
-    Vector4 rightBottom{0, 0, 0, 0};
-    for (int i = 0; i < 3; ++i) {
-        leftTop.x = std::min(leftTop.x, v[i].x);
-        leftTop.y = std::min(leftTop.y, v[i].y);
-        rightBottom.x = std::max(rightBottom.x, v[i].x);
-        rightBottom.y = std::max(rightBottom.y, v[i].y);
-    }
-    int bbMinX = std::max(0, static_cast<int>(floorf(leftTop.x)));
-    int bbMinY = std::max(0, static_cast<int>(floorf(leftTop.y)));
-    int bbMaxX = std::min(w - 1, static_cast<int>(ceilf(rightBottom.x)));
-    int bbMaxY = std::min(h - 1, static_cast<int>(ceilf(rightBottom.y)));
-
-    for (int y = bbMinY; y <= bbMaxY; ++y) {
-        int xFragStart;
-        int xFragEnd;
-        bool fragStarted = false;
-        // TODO: calculate xFragStart and xFragEnd instead of iterating over whole line
-        // TODO: handle common edge for triangles
-        for (int x = bbMinX; x <= bbMaxX; ++x) {
-            Vector4 p{static_cast<float>(x), static_cast<float>(y), 0, 0};
-            bool isInside = edge(p, v[0], v[1]) && edge(p, v[1], v[2]) && edge(p, v[2], v[0]);
-            if (isInside) {
-                if (!fragStarted) {
-                    xFragStart = x;
-                    fragStarted = true;
-                }
-                xFragEnd = x;
-            } else {
-                if (fragStarted) {
-                    break;
-                }
-            }
-        }
-        if (fragStarted) {
-            frags.push_back(FragmentLine{xFragStart, xFragEnd, y});
-        }
-    }
+float edge(const Vector4& p, const Vector4& v1, const Vector4& v2) {
+    return (p.x - v1.x) * (v2.y - v1.y) - (p.y - v1.y) * (v2.x - v1.x);
 }
 
 }
@@ -83,17 +31,9 @@ void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
 }
 
 void DrawAPI::drawFrame(Framebuffer& fb) const {
-    std::vector<FragmentLine> fragments;
-
     auto transform = getMatrix();
     for (const auto& object : objects) {
-        collectFrags(fb.getW(), fb.getH(), fragments, object, transform);
-    }
-
-    for (const auto& frag : fragments) {
-        for (int x = frag.x0; x <= frag.x1; ++x) {
-            fb.at(x, frag.y) = fragmentShader(x/static_cast<float>(fb.getW()), (fb.getH() - frag.y)/static_cast<float>(fb.getH()));
-        }
+        processFrags(fb, object, transform, fragmentShader);
     }
 }
 
@@ -117,3 +57,59 @@ Matrix4x4 DrawAPI::getMatrix() const {
         return stack.top();
     }
 }
+
+void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, const Shader& shader) {
+    Color c[3] = {
+            triangle.points[0].color,
+            triangle.points[1].color,
+            triangle.points[2].color,
+    };
+    Vector4 v[3] = {
+            transform * triangle.points[0].pos,
+            transform * triangle.points[1].pos,
+            transform * triangle.points[2].pos,
+    };
+    Vector4 leftTop{static_cast<float>(fb.getW()), static_cast<float>(fb.getH()), 0, 0};
+    Vector4 rightBottom{0, 0, 0, 0};
+    for (const auto& pos : v) {
+        leftTop.x = std::min(leftTop.x, pos.x);
+        leftTop.y = std::min(leftTop.y, pos.y);
+        rightBottom.x = std::max(rightBottom.x, pos.x);
+        rightBottom.y = std::max(rightBottom.y, pos.y);
+    }
+    int bbMinX = std::max(0, static_cast<int>(floorf(leftTop.x)));
+    int bbMinY = std::max(0, static_cast<int>(floorf(leftTop.y)));
+    int bbMaxX = std::min(fb.getW() - 1, static_cast<int>(ceilf(rightBottom.x)));
+    int bbMaxY = std::min(fb.getH() - 1, static_cast<int>(ceilf(rightBottom.y)));
+
+    float area = edge(v[0], v[1], v[2]);
+    for (int y = bbMinY; y <= bbMaxY; ++y) {
+        bool fragStarted = false;
+        // TODO: handle common edge for triangles
+        for (int x = bbMinX; x <= bbMaxX; ++x) {
+            Vector4 p{static_cast<float>(x), static_cast<float>(y), 0, 0};
+            float w2 = edge(p, v[0], v[1]);
+            float w0 = edge(p, v[1], v[2]);
+            float w1 = edge(p, v[2], v[0]);
+            bool isInside = w0 >= 0 && w1 >= 0 && w2 >= 0;
+            if (isInside) {
+                if (!fragStarted) {
+                    fragStarted = true;
+                }
+                w0 /= area;
+                w1 /= area;
+                w2 = 1 - w0 - w1;
+                Vertex vert{
+                        w0 * c[0] + w1 * c[1] + w2 * c[2],
+                        w0 * v[0] + w1 * v[1] + w2 * v[2],
+                };
+                fb.at(x, y) = shader(vert);
+            } else {
+                if (fragStarted) {
+                    break;
+                }
+            }
+        }
+    }
+}
+
