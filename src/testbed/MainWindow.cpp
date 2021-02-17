@@ -52,17 +52,49 @@ MainWindow::MainWindow()
         push_prof("fill done");
 
         static float a = 0;
-        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 240, 0));
-        drawAPi.pushMatrix(ll::Matrix4x4::rotZ(a));
-        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, -240, 0));
-        a += 0.3;
+
+        drawAPi.pushMatrix(ll::Matrix4x4::toScreenSpace(640, 480));
+
+        drawAPi.pushMatrix(ll::Matrix4x4::perspective(M_PI/2, 640.0/480.0, 1, -2));
+
+        drawAPi.pushMatrix(ll::Matrix4x4::lookAt(
+                ll::Vector4::position(-0.5, 1, 4),
+                ll::Vector4::position(-0.5, 0, 0),
+                ll::Vector4::direction(0, 1, 0))
+        );
+//        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 240, 0));
+        drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI/3*sinf(a)));
+//        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, -240, 0));
+        a += 0.1;
+
+        ll::Vertex v0{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};
+        ll::Vertex v1{ll::Color(1, 0, 0), ll::Vector4::position(1, 0, 0)};
+        ll::Vertex v2{ll::Color(0, 1, 0), ll::Vector4::position(0, 1, 0)};
+        ll::Vertex v4{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 1)};
 
         drawAPi.addTriangles({
-            ll::Triangle{{
-                {ll::Color(1, 0, 0), ll::Vector4::position(20, 200, 0)},
-                {ll::Color(0, 1, 0), ll::Vector4::position(400, 400, 0)},
-                {ll::Color(0, 0, 1), ll::Vector4::position(600, 20, 0)},
-            }},
+            ll::Triangle{{ v0, v1, v2 }},
+            ll::Triangle{{ v0, v2, v4 }},
+            ll::Triangle{{ v0, v4, v1 }},
+            ll::Triangle{{ v2, v1, v4 }},
+        });
+
+        v0.pos.z = v1.pos.z = v2.pos.z = 1;
+        v4.pos.z = 2;
+        drawAPi.addTriangles({
+            ll::Triangle{{ v0, v1, v2 }},
+            ll::Triangle{{ v0, v2, v4 }},
+            ll::Triangle{{ v0, v4, v1 }},
+            ll::Triangle{{ v2, v1, v4 }},
+        });
+
+        v0.pos.z = v1.pos.z = v2.pos.z = 2;
+        v4.pos.z = 3;
+        drawAPi.addTriangles({
+            ll::Triangle{{ v0, v1, v2 }},
+            ll::Triangle{{ v0, v2, v4 }},
+            ll::Triangle{{ v0, v4, v1 }},
+            ll::Triangle{{ v2, v1, v4 }},
         });
         drawAPi.drawFrame(fb);
         push_prof("frame draw");

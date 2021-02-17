@@ -17,6 +17,10 @@ void DrawAPI::setFragmentShader(Shader shader) {
     fragmentShader = std::move(shader);
 }
 
+void DrawAPI::setCullMode(CullMode cullMode) {
+    cull = cullMode;
+}
+
 void DrawAPI::reset() {
     objects.clear();
     loadIdentity();
@@ -33,7 +37,7 @@ void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
 void DrawAPI::drawFrame(Framebuffer& fb) const {
     auto transform = getMatrix();
     for (const auto& object : objects) {
-        processFrags(fb, object, transform, fragmentShader);
+        processFrags(fb, object, transform, cull, fragmentShader);
     }
 }
 
@@ -58,7 +62,7 @@ Matrix4x4 DrawAPI::getMatrix() const {
     }
 }
 
-void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, const Shader& shader) {
+void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, CullMode cull, const Shader& shader) {
     Color c[3] = {
             triangle.points[0].color,
             triangle.points[1].color,
@@ -83,6 +87,9 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matr
     int bbMaxY = std::min(fb.getH() - 1, static_cast<int>(ceilf(rightBottom.y)));
 
     float area = edge(v[0], v[1], v[2]);
+    if (area == 0) {
+        return;
+    }
     for (int y = bbMinY; y <= bbMaxY; ++y) {
         bool fragStarted = false;
         // TODO: handle common edge for triangles
@@ -91,7 +98,9 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matr
             float w2 = edge(p, v[0], v[1]);
             float w0 = edge(p, v[1], v[2]);
             float w1 = edge(p, v[2], v[0]);
-            bool isInside = w0 >= 0 && w1 >= 0 && w2 >= 0;
+            bool isInsideCW = w0 >= 0 && w1 >= 0 && w2 >= 0;
+            bool isInsideCCW = w0 <= 0 && w1 <= 0 && w2 <= 0;
+            bool isInside = (isInsideCW && cull != CullMode::DrawCCW) || (isInsideCCW && cull != CullMode::DrawCW);
             if (isInside) {
                 if (!fragStarted) {
                     fragStarted = true;

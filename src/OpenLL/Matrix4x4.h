@@ -6,6 +6,15 @@
 
 namespace ll {
 
+struct Matrix4x4;
+
+inline Matrix4x4 operator-(const Matrix4x4& m);
+inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2);
+inline Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2);
+inline Matrix4x4 operator*(float f, const Matrix4x4& m);
+inline Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
+inline Vector4 operator*(const Matrix4x4& m, const Vector4& v);
+
 struct Matrix4x4 {
     union {
         Vector4 rows[4];
@@ -42,8 +51,8 @@ struct Matrix4x4 {
         Matrix4x4 ret = identity();
         ret.rows[0].data[0] = std::cos(angle);
         ret.rows[2].data[2] = std::cos(angle);
-        ret.rows[2].data[0] = std::sin(angle);
-        ret.rows[0].data[2] = -std::sin(angle);
+        ret.rows[2].data[0] = -std::sin(angle);
+        ret.rows[0].data[2] = std::sin(angle);
         return ret;
     }
 
@@ -81,13 +90,52 @@ struct Matrix4x4 {
     }
 
     static Matrix4x4 lookAt(const Vector4& camera, const Vector4& target, const Vector4& upVector) {
-        // TODO: implement
-        return identity();
+        Vector4 f = (camera - target).normalized().asDirection();
+        Vector4 l = cross(upVector, f).normalized().asDirection();
+        Vector4 u = cross(f, l).asDirection();
+        Matrix4x4 rot{
+                l,
+                u,
+                f,
+                Vector4{0, 0, 0, 1},
+        };
+        return rot * translation(-camera);
     }
 
-    static Matrix4x4 perspective(float fov, float aspect, float near, float far) {
-        // TODO: implement
-        return identity();
+    static Matrix4x4 perspective(float fovY, float aspect, float near, float far) {
+        float f = tanf(fovY/2);
+        return {
+                Vector4{f/aspect, 0, 0, 0},
+                Vector4{0, f, 0, 0},
+                Vector4{0, 0, -(far + near)/(far - near), -2*far*near/(far - near)},
+                Vector4{0, 0, -1, 0},
+        };
+    }
+
+    static Matrix4x4 frustum(float width, float height, float near, float far) {
+        return frustum(width/2, height/2, -width/2, -height/2, near, far);
+    }
+
+    static Matrix4x4 frustum(float right, float top, float left, float bottom, float near, float far) {
+        return {
+                Vector4{2*near/(right - left), 0, (right + left)/(right - left), 0},
+                Vector4{0, 2*near/(top - bottom), (top + bottom)/(top - bottom), 0},
+                Vector4{0, 0, -(far + near)/(far - near), -2*far*near/(far - near)},
+                Vector4{0, 0, -1, 0},
+        };
+    }
+
+    static Matrix4x4 ortho(float right, float top, float left, float bottom, float near, float far) {
+        return {
+                Vector4{2/(right - left), 0, 0, -(right + left)/(right - left)},
+                Vector4{0, 2/(top - bottom), 0, -(top + bottom)/(top - bottom)},
+                Vector4{0, 0, -2/(far - near), -(far + near)/(far - near)},
+                Vector4{0, 0, 0, 1},
+        };
+    }
+
+    static Matrix4x4 toScreenSpace(float width, float height) {
+        return scale(width/2, height/2, 1) * translation(1, 1, 0);
     }
 };
 
@@ -117,7 +165,11 @@ inline Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 inline Vector4 operator*(const Matrix4x4& m, const Vector4& v) {
-    return {dot(m.rows[0], v), dot(m.rows[1], v), dot(m.rows[2], v), dot(m.rows[3], v)};
+    Vector4 result{dot(m.rows[0], v), dot(m.rows[1], v), dot(m.rows[2], v), dot(m.rows[3], v)};
+    if (result.w != 0) {
+        return (1/result.w) * result;
+    }
+    return result;
 }
 
 }

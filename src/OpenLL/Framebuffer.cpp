@@ -31,5 +31,9 @@ std::vector<uint32_t> Framebuffer::getColorsARGB32() const {
 }
 
 Color& Framebuffer::at(int x, int y) {
-    return colors[y * w + x];
+    if (0 <= x && x < w && 0 <= y && y < h) {
+        return colors[(h - 1 - y) * w + x];
+    }
+    static Color dummy;
+    return dummy;
 }

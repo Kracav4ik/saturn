@@ -14,9 +14,16 @@ class Color;
 
 using Shader = std::function<Color(const Vertex&)>;
 
+enum class CullMode {
+    DrawCW,
+    DrawCCW,
+    DrawBoth,
+};
+
 class DrawAPI {
 public:
     void setFragmentShader(Shader shader);
+    void setCullMode(CullMode cullMode);
 
     void reset();
 
@@ -32,9 +39,10 @@ public:
 
 private:
     Matrix4x4 getMatrix() const;
-    static void processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, const Shader& shader);
+    static void processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, CullMode cull, const Shader& shader);
 
     Shader fragmentShader;
+    CullMode cull = CullMode::DrawCW;
     std::vector<Triangle> objects;
     std::stack<Matrix4x4> stack;
 };
