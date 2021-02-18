@@ -1,5 +1,6 @@
 #include "DrawAPI.h"
 #include "Framebuffer.h"
+#include "Sampler.h"
 
 #include <cmath>
 
@@ -22,7 +23,7 @@ void DrawAPI::setCullMode(CullMode cullMode) {
 }
 
 void DrawAPI::reset() {
-    objects.clear();
+    drawCalls.clear();
     loadIdentity();
 }
 
@@ -31,13 +32,14 @@ void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
 }
 
 void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
-    objects.insert(objects.end(), triangles.begin(), triangles.end());
+    drawCalls.push_back(DrawCall{triangles, fragmentShader, getMatrix()});
 }
 
 void DrawAPI::drawFrame(Framebuffer& fb) const {
-    auto transform = getMatrix();
-    for (const auto& object : objects) {
-        processFrags(fb, object, transform, cull, fragmentShader);
+    for (const auto& drawCall : drawCalls) {
+        for (const auto& object : drawCall.objects) {
+            processFrags(fb, object, drawCall.shader, drawCall.transform);
+        }
     }
 }
 
@@ -54,6 +56,10 @@ void DrawAPI::popMatrix() {
     stack.pop();
 }
 
+void DrawAPI::loadTexture(const uint32_t* data, int width, int height) {
+    sampler = std::make_unique<Sampler>(data, width, height);
+}
+
 Matrix4x4 DrawAPI::getMatrix() const {
     if (stack.empty()) {
         return Matrix4x4::identity();
@@ -62,7 +68,7 @@ Matrix4x4 DrawAPI::getMatrix() const {
     }
 }
 
-void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matrix4x4& transform, CullMode cull, const Shader& shader) {
+void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Shader& shader, const Matrix4x4& transform) const {
     Color c[3] = {
             triangle.points[0].color,
             triangle.points[1].color,
@@ -72,6 +78,11 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matr
             transform * triangle.points[0].pos,
             transform * triangle.points[1].pos,
             transform * triangle.points[2].pos,
+    };
+    Vector2 uv[3] = {
+            triangle.points[0].uv,
+            triangle.points[1].uv,
+            triangle.points[2].uv,
     };
     Vector4 leftTop{static_cast<float>(fb.getW()), static_cast<float>(fb.getH()), 0, 0};
     Vector4 rightBottom{0, 0, 0, 0};
@@ -111,8 +122,9 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Matr
                 Vertex vert{
                         w0 * c[0] + w1 * c[1] + w2 * c[2],
                         w0 * v[0] + w1 * v[1] + w2 * v[2],
+                        w0 * uv[0] + w1 * uv[1] + w2 * uv[2],
                 };
-                fb.at(x, y) = shader(vert);
+                fb.at(x, y) = shader(vert, sampler.get());
             } else {
                 if (fragStarted) {
                     break;

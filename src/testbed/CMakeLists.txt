@@ -6,7 +6,10 @@ set(EXE_SOURCES
         MainWindow.cpp
 )
 
-add_executable(${EXE_NAME} ${EXE_SOURCES})
+qt5_add_resources(EXE_RESOURCES main.qrc)
+
+add_executable(${EXE_NAME} ${EXE_SOURCES} ${EXE_RESOURCES})
+
 target_link_libraries(${EXE_NAME} ${QT_LIBS} open_ll)
 
 # Copy required dlls

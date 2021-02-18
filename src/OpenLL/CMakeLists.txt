@@ -6,7 +6,10 @@ set(LIBRARY_SOURCES
         Framebuffer.cpp
         Framebuffer.h
         Matrix4x4.h
+        Sampler.cpp
+        Sampler.h
         Triangle.h
+        Vector2.h
         Vector4.h
         Vertex.h
 )

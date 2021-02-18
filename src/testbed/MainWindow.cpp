@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 
-#include "OpenLL/DrawAPI.h"
+#include "OpenLL/Sampler.h"
 
 #include <QDebug>
 #include <chrono>
@@ -10,12 +10,13 @@ MainWindow::MainWindow()
 {
     setupUi(this);
 
+    img.load(":/UV_Grid.jpg");
+
+    drawAPi.loadTexture(reinterpret_cast<const uint32_t*>(img.constBits()), img.width(), img.height());
     timer.setInterval(100);
     timer.start();
     connect(&timer, &QTimer::timeout, [this]() {
         using namespace std::chrono;
-
-        static ll::DrawAPI drawAPi;
 
         static size_t i = 0;
         qDebug() << "frame" << i;
@@ -43,9 +44,6 @@ MainWindow::MainWindow()
                 ll::Color(0, 0, 0),
         };
 
-        drawAPi.setFragmentShader([&](const ll::Vertex& vert) {
-            return vert.color;
-        });
         drawAPi.reset();
 
         drawAPi.clear(fb, cls[i++ / 10 % cls.size()]);
@@ -62,6 +60,24 @@ MainWindow::MainWindow()
                 ll::Vector4::position(-0.5, 0, 0),
                 ll::Vector4::direction(0, 1, 0))
         );
+
+        drawAPi.setFragmentShader([&](const ll::Vertex& vert, const ll::Sampler* sampler) {
+            return sampler->getColor(vert.uv);
+        });
+
+        ll::Vertex vb0{ll::Color(0, 0, 0), ll::Vector4::position(-2, 0, -3), ll::Vector2{0, 0}};
+        ll::Vertex vb1{ll::Color(1, 0, 0), ll::Vector4::position(2, 0, -3), ll::Vector2{1, 0}};
+        ll::Vertex vb2{ll::Color(0, 1, 0), ll::Vector4::position(-2, 0, 3), ll::Vector2{0, 1}};
+        ll::Vertex vb3{ll::Color(0, 0, 1), ll::Vector4::position(2, 0, 3), ll::Vector2{1, 1}};
+        drawAPi.addTriangles({
+                 ll::Triangle{{ vb0, vb1, vb2 }},
+                 ll::Triangle{{ vb2, vb1, vb3 }},
+         });
+
+        drawAPi.setFragmentShader([&](const ll::Vertex& vert, const ll::Sampler* sampler) {
+            return vert.color;
+        });
+
 //        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 240, 0));
         drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI/3*sinf(a)));
 //        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, -240, 0));
