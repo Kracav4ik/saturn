@@ -165,11 +165,7 @@ inline Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 inline Vector4 operator*(const Matrix4x4& m, const Vector4& v) {
-    Vector4 result{dot(m.rows[0], v), dot(m.rows[1], v), dot(m.rows[2], v), dot(m.rows[3], v)};
-    if (result.w != 0) {
-        return (1/result.w) * result;
-    }
-    return result;
+    return {dot(m.rows[0], v), dot(m.rows[1], v), dot(m.rows[2], v), dot(m.rows[3], v)};
 }
 
 }

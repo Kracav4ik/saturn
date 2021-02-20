@@ -65,22 +65,26 @@ MainWindow::MainWindow()
             return sampler->getColor(vert.uv);
         });
 
+//        drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, 1));
+        drawAPi.pushMatrix(ll::Matrix4x4::rotY(a/3));
+//        drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, -1));
         ll::Vertex vb0{ll::Color(0, 0, 0), ll::Vector4::position(-2, 0, -3), ll::Vector2{0, 0}};
         ll::Vertex vb1{ll::Color(1, 0, 0), ll::Vector4::position(2, 0, -3), ll::Vector2{1, 0}};
         ll::Vertex vb2{ll::Color(0, 1, 0), ll::Vector4::position(-2, 0, 3), ll::Vector2{0, 1}};
         ll::Vertex vb3{ll::Color(0, 0, 1), ll::Vector4::position(2, 0, 3), ll::Vector2{1, 1}};
         drawAPi.addTriangles({
-                 ll::Triangle{{ vb0, vb1, vb2 }},
-                 ll::Triangle{{ vb2, vb1, vb3 }},
-         });
+                ll::Triangle{{ vb0, vb1, vb2 }},
+                ll::Triangle{{ vb2, vb1, vb3 }},
+        });
+//        drawAPi.popMatrix();
+        drawAPi.popMatrix();
+//        drawAPi.popMatrix();
 
         drawAPi.setFragmentShader([&](const ll::Vertex& vert, const ll::Sampler* sampler) {
             return vert.color;
         });
 
-//        drawAPi.pushMatrix(ll::Matrix4x4::translation(320, 240, 0));
         drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI/3*sinf(a)));
-//        drawAPi.pushMatrix(ll::Matrix4x4::translation(-320, -240, 0));
         a += 0.1;
 
         ll::Vertex v0{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};

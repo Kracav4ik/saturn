@@ -14,10 +14,10 @@ Sampler::Sampler(const uint32_t* data, int width, int height)
 }
 
 Color ll::Sampler::getColor(const ll::Vector2& uv) const {
-    float u = std::max(0.f, std::min(uv.u, 1.f));
-    float v = std::max(0.f, std::min(uv.v, 1.f));
-    int ui = static_cast<int>(u*w);
-    int vi = static_cast<int>(v*h);
+    int ui = static_cast<int>(uv.u*w);
+    int vi = static_cast<int>(uv.v*h);
+    ui = std::max(0, std::min(ui, w - 1));
+    vi = std::max(0, std::min(vi, h - 1));
     return img[vi * w + ui];
 
 }

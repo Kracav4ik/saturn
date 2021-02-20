@@ -79,11 +79,25 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Shad
             transform * triangle.points[1].pos,
             transform * triangle.points[2].pos,
     };
-    Vector2 uv[3] = {
-            triangle.points[0].uv,
-            triangle.points[1].uv,
-            triangle.points[2].uv,
+
+    auto makeUV4D = [&](int i) {
+        const auto& uv = triangle.points[i].uv;
+        float w = v[i].w;
+        if (w != 0) {
+            return Vector4{uv.u/w, uv.v/w, 0, 1/w};
+        }
+        return Vector4{uv.u, uv.v, 0, 0};
     };
+
+    Vector4 uv[3] = {
+            makeUV4D(0),
+            makeUV4D(1),
+            makeUV4D(2),
+    };
+    for (auto& pos : v) {
+        pos = pos.toHomogenous();
+    }
+
     Vector4 leftTop{static_cast<float>(fb.getW()), static_cast<float>(fb.getH()), 0, 0};
     Vector4 rightBottom{0, 0, 0, 0};
     for (const auto& pos : v) {
@@ -119,10 +133,11 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Shad
                 w0 /= area;
                 w1 /= area;
                 w2 = 1 - w0 - w1;
+                Vector4 fragUV = (w0 * uv[0] + w1 * uv[1] + w2 * uv[2]).toHomogenous();
                 Vertex vert{
                         w0 * c[0] + w1 * c[1] + w2 * c[2],
                         w0 * v[0] + w1 * v[1] + w2 * v[2],
-                        w0 * uv[0] + w1 * uv[1] + w2 * uv[2],
+                        {fragUV.x, fragUV.y},
                 };
                 fb.at(x, y) = shader(vert, sampler.get());
             } else {

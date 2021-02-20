@@ -59,6 +59,13 @@ struct Vector4 {
     Vector4 asPosition() const {
         return position(x, y, z);
     }
+
+    Vector4 toHomogenous() const {
+        if (w != 0) {
+            return (1/w) * (*this);
+        }
+        return (*this);
+    }
 };
 
 inline Vector4 operator-(const Vector4& v) {
