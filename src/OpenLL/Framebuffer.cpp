@@ -6,6 +6,7 @@ Framebuffer::Framebuffer(int w, int h)
     : w(w)
     , h(h)
     , colors(w * h)
+    , zOrder(colors.size())
 {
 }
 
@@ -30,10 +31,13 @@ std::vector<uint32_t> Framebuffer::getColorsARGB32() const {
     return result;
 }
 
-Color& Framebuffer::at(int x, int y) {
-    if (0 <= x && x < w && 0 <= y && y < h) {
-        return colors[(h - 1 - y) * w + x];
+void Framebuffer::putPixel(int x, int y, float z, Color color) {
+    int idx = (h - 1 - y) * w + x;
+
+    if (0 > x || x >= w || 0 > y || y >= h || zOrder[idx] < z) {
+        return;
     }
-    static Color dummy;
-    return dummy;
+
+    colors[idx] = color;
+    zOrder[idx] = z;
 }

@@ -22,3 +22,4 @@ include_directories(.)
 
 add_subdirectory(OpenLL)
 add_subdirectory(testbed)
+add_subdirectory(lab1)

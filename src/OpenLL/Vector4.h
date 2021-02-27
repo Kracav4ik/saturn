@@ -49,7 +49,8 @@ struct Vector4 {
         if (n == 0) {
             return zero();
         }
-        return (1/n) * (*this);
+        float invN = 1 / n;
+        return {invN*x, invN*y, invN*z, w };
     }
 
     Vector4 asDirection() const {

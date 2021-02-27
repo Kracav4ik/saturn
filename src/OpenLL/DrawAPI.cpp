@@ -29,6 +29,7 @@ void DrawAPI::reset() {
 
 void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
     std::fill(fb.colors.begin(), fb.colors.end(), color);
+    std::fill(fb.zOrder.begin(), fb.zOrder.end(), 10);
 }
 
 void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
@@ -139,7 +140,7 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Shad
                         w0 * v[0] + w1 * v[1] + w2 * v[2],
                         {fragUV.x, fragUV.y},
                 };
-                fb.at(x, y) = shader(vert, sampler.get());
+                fb.putPixel(x, y, vert.pos.z, shader(vert, sampler.get()));
             } else {
                 if (fragStarted) {
                     break;
@@ -147,5 +148,9 @@ void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Shad
             }
         }
     }
+}
+
+DrawAPI::TransformWrapper DrawAPI::saveTransform() {
+    return DrawAPI::TransformWrapper(*this);
 }
 

@@ -81,6 +81,10 @@ struct Matrix4x4 {
         return scale(Vector4::direction(x, y, z));
     }
 
+    static Matrix4x4 scale(float f) {
+        return scale(f, f, f);
+    }
+
     static Matrix4x4 scale(const Vector4& v) {
         Matrix4x4 ret = identity();
         for (int i = 0; i < 3; ++i) {
@@ -145,10 +149,6 @@ inline Matrix4x4 operator-(const Matrix4x4& m) {
 
 inline Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) {
     return {m1.rows[0] + m2.rows[0], m1.rows[1] + m2.rows[1], m1.rows[2] + m2.rows[2], m1.rows[3] + m2.rows[3]};
-}
-
-inline Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2) {
-    return m1 + (-m2);
 }
 
 inline Matrix4x4 operator*(float f, const Matrix4x4& m) {

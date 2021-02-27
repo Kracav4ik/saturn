@@ -30,6 +30,30 @@ struct DrawCall {
 };
 
 class DrawAPI {
+    class TransformWrapper {
+    friend class DrawAPI;
+
+    public:
+        TransformWrapper(const TransformWrapper&) = delete;
+        TransformWrapper operator=(const TransformWrapper&) = delete;
+        TransformWrapper(TransformWrapper&&) = delete;
+        TransformWrapper operator=(TransformWrapper&&) = delete;
+
+        ~TransformWrapper() {
+            std::swap(drawApi.stack, savedStack);
+        }
+
+    private:
+        explicit TransformWrapper(DrawAPI& drawApi)
+                : drawApi(drawApi)
+                , savedStack(drawApi.stack)
+        {
+        }
+
+        std::stack<Matrix4x4> savedStack;
+        DrawAPI& drawApi;
+    };
+
 public:
     void setFragmentShader(Shader shader);
     void setCullMode(CullMode cullMode);
@@ -46,6 +70,8 @@ public:
     void pushMatrix(const Matrix4x4& mat);
     void popMatrix();
     void loadTexture(const uint32_t* data, int width, int height);
+
+    TransformWrapper saveTransform();
 
 private:
     Matrix4x4 getMatrix() const;
