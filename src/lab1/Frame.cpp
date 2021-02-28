@@ -13,7 +13,7 @@ Frame::Frame(QWidget* parent)
 void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 world, float angle) {
     drawAPi.reset();
 
-    drawAPi.clear(fb, ll::Color(1, 1, 0));
+    drawAPi.clear(fb, ll::Color(0.5, 0.5, 0.5));
     drawAPi.pushMatrix(ll::Matrix4x4::toScreenSpace(fb.getW(), fb.getH()));
 
     drawAPi.pushMatrix(projection);

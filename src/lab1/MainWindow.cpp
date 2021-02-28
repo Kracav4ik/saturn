@@ -46,7 +46,9 @@ MainWindow::MainWindow()
 
             drawAPi.pushMatrix(ll::Matrix4x4::translation(0.5, 0.5, 0.5));
             drawAPi.pushMatrix(ll::Matrix4x4::translation(0.5, 0.5, 0.5));
-//            drawAPi.pushMatrix(ll::Matrix4x4::rotX(M_PI / 4 * sinf(angle)) * ll::Matrix4x4::rotY(M_PI / 4 * sinf(angle)));
+            drawAPi.pushMatrix(ll::Matrix4x4::rotX(M_PI * angle));
+            drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI * angle * 0.3));
+            drawAPi.pushMatrix(ll::Matrix4x4::rotZ(M_PI * angle * 0.1));
             drawAPi.pushMatrix(ll::Matrix4x4::translation(-0.5, -0.5, -0.5));
 
             ll::Vertex v000{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};

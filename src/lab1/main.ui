@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>933</width>
-    <height>661</height>
+    <width>749</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -70,7 +70,7 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Cooling</string>
+         <string>Culling</string>
         </property>
        </widget>
       </item>
@@ -153,7 +153,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>933</width>
+     <width>749</width>
      <height>21</height>
     </rect>
    </property>
