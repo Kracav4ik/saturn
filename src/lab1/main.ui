@@ -10,6 +10,12 @@
     <height>661</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>lab1</string>
   </property>
@@ -18,16 +24,44 @@
     <item>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QGraphicsView" name="drawArea1"/>
+       <widget class="Frame" name="drawArea1">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="dragMode">
+         <enum>QGraphicsView::ScrollHandDrag</enum>
+        </property>
+       </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QGraphicsView" name="drawArea2"/>
+       <widget class="Frame" name="drawArea2">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="dragMode">
+         <enum>QGraphicsView::ScrollHandDrag</enum>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QGraphicsView" name="drawArea3"/>
+       <widget class="Frame" name="drawArea3">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="dragMode">
+         <enum>QGraphicsView::ScrollHandDrag</enum>
+        </property>
+       </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QGraphicsView" name="drawArea4"/>
+       <widget class="Frame" name="drawArea4">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="dragMode">
+         <enum>QGraphicsView::ScrollHandDrag</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -91,6 +125,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="reset">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -119,6 +160,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Frame</class>
+   <extends>QGraphicsView</extends>
+   <header>Frame.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

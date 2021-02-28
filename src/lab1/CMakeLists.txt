@@ -4,6 +4,8 @@ set(EXE_SOURCES
         main.cpp
         MainWindow.h
         MainWindow.cpp
+        Frame.cpp
+        Frame.h
 )
 
 add_executable(${EXE_NAME} ${EXE_SOURCES})

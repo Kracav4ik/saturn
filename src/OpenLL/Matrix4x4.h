@@ -133,7 +133,7 @@ struct Matrix4x4 {
         return {
                 Vector4{2/(right - left), 0, 0, -(right + left)/(right - left)},
                 Vector4{0, 2/(top - bottom), 0, -(top + bottom)/(top - bottom)},
-                Vector4{0, 0, -2/(far - near), -(far + near)/(far - near)},
+                Vector4{0, 0, 2/(far - near), -(far + near)/(far - near)},
                 Vector4{0, 0, 0, 1},
         };
     }

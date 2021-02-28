@@ -2,6 +2,7 @@
 
 #include "Triangle.h"
 #include "Matrix4x4.h"
+#include "Sampler.h"
 
 #include <vector>
 #include <functional>
@@ -12,8 +13,6 @@ namespace ll {
 
 class Framebuffer;
 class Color;
-
-class Sampler;
 
 using Shader = std::function<Color(const Vertex&, const Sampler*)>;
 
