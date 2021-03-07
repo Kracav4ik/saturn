@@ -3,11 +3,17 @@ set(LIBRARY_SOURCES
         Color.h
         DrawAPI.cpp
         DrawAPI.h
+        Fragment.h
         Framebuffer.cpp
         Framebuffer.h
+        Line.cpp
+        Line.h
         Matrix4x4.h
         Sampler.cpp
         Sampler.h
+        Shader.h
+        Shape.h
+        Triangle.cpp
         Triangle.h
         Vector2.h
         Vector4.h

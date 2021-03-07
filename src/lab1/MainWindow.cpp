@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 
-#include "OpenLL/Sampler.h"
+#include "OpenLL/Fragment.h"
 #include <QDebug>
 #include <QWheelEvent>
 
@@ -37,7 +37,7 @@ MainWindow::MainWindow()
 
     auto drawFunc = [this](ll::DrawAPI& drawAPi, float angle){
         drawAPi.setCullMode(cullMode);
-        drawAPi.setFragmentShader([&](const ll::Vertex& vert, const ll::Sampler* sampler) {
+        drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
             return vert.color;
         });
 
@@ -62,8 +62,8 @@ MainWindow::MainWindow()
 
             auto getTrianglesFromRect = [&](ll::Vertex lb, ll::Vertex lt, ll::Vertex rt, ll::Vertex rb) {
                 return std::vector<ll::Triangle> {
-                        ll::Triangle{{ rt, lt, lb }},
-                        ll::Triangle{{ rt, rb, lt }},
+                        ll::Triangle{ rt, lt, lb },
+                        ll::Triangle{ rt, rb, lt },
                 };
             };
 
@@ -153,8 +153,8 @@ void MainWindow::drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLe
 
     auto getTrianglesFromRect = [&](ll::Vertex lb, ll::Vertex lt, ll::Vertex rt, ll::Vertex rb) {
         return std::vector<ll::Triangle> {
-                ll::Triangle{{ rt, lt, lb }},
-                ll::Triangle{{ rt, rb, lt }},
+                ll::Triangle{ rt, lt, lb },
+                ll::Triangle{ rt, rb, lt },
         };
     };
 

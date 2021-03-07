@@ -3,18 +3,15 @@
 #include "Triangle.h"
 #include "Matrix4x4.h"
 #include "Sampler.h"
+#include "Shader.h"
 
 #include <vector>
-#include <functional>
 #include <stack>
 #include <memory>
 
 namespace ll {
 
 class Framebuffer;
-class Color;
-
-using Shader = std::function<Color(const Vertex&, const Sampler*)>;
 
 enum class CullMode {
     DrawCW,
@@ -23,7 +20,12 @@ enum class CullMode {
 };
 
 struct DrawCall {
-    std::vector<Triangle> objects;
+    template<typename T>
+    DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform);
+
+    DrawCall();
+
+    std::vector<std::unique_ptr<Shape>> objects;
     Shader shader;
     Matrix4x4 transform;
 };
