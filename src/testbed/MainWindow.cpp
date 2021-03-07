@@ -1,6 +1,8 @@
 #include "MainWindow.h"
 
 #include "OpenLL/Fragment.h"
+#include "OpenLL/Line.h"
+#include "OpenLL/Triangle.h"
 
 #include <QDebug>
 #include <chrono>
@@ -65,20 +67,29 @@ MainWindow::MainWindow()
             return sampler->getColor(vert.uv);
         });
 
-//        drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, 1));
-        drawAPi.pushMatrix(ll::Matrix4x4::rotY(a/3));
-//        drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, -1));
-        ll::Vertex vb0{ll::Color(0, 0, 0), ll::Vector4::position(-2, 0, -3), ll::Vector2{0, 0}};
-        ll::Vertex vb1{ll::Color(1, 0, 0), ll::Vector4::position(2, 0, -3), ll::Vector2{1, 0}};
-        ll::Vertex vb2{ll::Color(0, 1, 0), ll::Vector4::position(-2, 0, 3), ll::Vector2{0, 1}};
-        ll::Vertex vb3{ll::Color(0, 0, 1), ll::Vector4::position(2, 0, 3), ll::Vector2{1, 1}};
-        drawAPi.addTriangles({
-                ll::Triangle{ vb0, vb1, vb2 },
-                ll::Triangle{ vb2, vb1, vb3 },
-        });
-//        drawAPi.popMatrix();
-        drawAPi.popMatrix();
-//        drawAPi.popMatrix();
+        {
+            auto wrapper = drawAPi.saveTransform();
+
+            drawAPi.pushMatrix(ll::Matrix4x4::rotY(a/3));
+            ll::Vertex vb0{ll::Color(0, 0, 0), ll::Vector4::position(-2, 0, -3), ll::Vector2{0, 0}};
+            ll::Vertex vb1{ll::Color(1, 0, 0), ll::Vector4::position(2, 0, -3), ll::Vector2{1, 0}};
+            ll::Vertex vb2{ll::Color(0, 1, 0), ll::Vector4::position(-2, 0, 3), ll::Vector2{0, 1}};
+            ll::Vertex vb3{ll::Color(0, 0, 1), ll::Vector4::position(2, 0, 3), ll::Vector2{1, 1}};
+            drawAPi.addTriangles({
+                    ll::Triangle{ vb0, vb1, vb2 },
+                    ll::Triangle{ vb2, vb1, vb3 },
+            });
+
+            std::vector<ll::Line> lines;
+            for (int i = 0; i <= 500; ++i) {
+                float t = i / 500.0f;
+                lines.push_back(ll::Line(
+                        {ll::Color(0, 0, 0), ll::Vector4::position(4*t -2, 2, -3), ll::Vector2{t, 0}},
+                        {ll::Color(0, 0, 0), ll::Vector4::position(4*t -2, 2, 3), ll::Vector2{t, 1}}
+                ));
+            }
+            drawAPi.addLines(lines);
+        }
 
         drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
             return vert.color;

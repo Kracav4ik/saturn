@@ -4,6 +4,7 @@
 #include "Matrix4x4.h"
 #include "Sampler.h"
 #include "Shader.h"
+#include "Line.h"
 
 #include <vector>
 #include <stack>
@@ -63,6 +64,7 @@ public:
 
     void clear(Framebuffer& fb, const Color& color) const;
 
+    void addLines(const std::vector<Line>& lines);
     void addTriangles(const std::vector<Triangle>& triangles);
 
     void drawFrame(Framebuffer& fb) const;

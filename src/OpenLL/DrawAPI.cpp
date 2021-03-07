@@ -38,6 +38,10 @@ void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
     std::fill(fb.zOrder.begin(), fb.zOrder.end(), 10);
 }
 
+void DrawAPI::addLines(const std::vector<Line>& lines) {
+    drawCalls.emplace_back(lines, fragmentShader, getMatrix());
+}
+
 void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
     drawCalls.emplace_back(triangles, fragmentShader, getMatrix());
 }
