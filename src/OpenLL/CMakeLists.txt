@@ -11,6 +11,8 @@ set(LIBRARY_SOURCES
         Matrix4x4.h
         Sampler.cpp
         Sampler.h
+        Scene.cpp
+        Scene.h
         Shader.h
         Shape.h
         Triangle.cpp
