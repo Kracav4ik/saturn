@@ -11,6 +11,10 @@ struct Color {
     float r;
     float g;
     float b;
+
+    bool isDiscard() const;
+
+    static const Color DISCARD;
 };
 
 inline Color operator+(const Color& c1, const Color& c2) {

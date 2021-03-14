@@ -22,13 +22,14 @@ enum class CullMode {
 
 struct DrawCall {
     template<typename T>
-    DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform);
+    DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform, CullMode cull);
 
     DrawCall();
 
     std::vector<std::unique_ptr<Shape>> objects;
     Shader shader;
     Matrix4x4 transform;
+    CullMode cull;
 };
 
 class DrawAPI {

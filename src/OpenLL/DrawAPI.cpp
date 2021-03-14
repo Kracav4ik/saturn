@@ -5,9 +5,10 @@
 using namespace ll;
 
 template<typename T>
-DrawCall::DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform)
+DrawCall::DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform, CullMode cull)
     : shader(std::move(shader))
     , transform(std::move(transform))
+    , cull(cull)
 {
     objects.reserve(vec.size());
     for (const auto& item : vec) {
@@ -39,17 +40,17 @@ void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
 }
 
 void DrawAPI::addLines(const std::vector<Line>& lines) {
-    drawCalls.emplace_back(lines, fragmentShader, getMatrix());
+    drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
 }
 
 void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
-    drawCalls.emplace_back(triangles, fragmentShader, getMatrix());
+    drawCalls.emplace_back(triangles, fragmentShader, getMatrix(), cull);
 }
 
 void DrawAPI::drawFrame(Framebuffer& fb) const {
     for (const auto& drawCall : drawCalls) {
         for (const auto& object : drawCall.objects) {
-            for (const auto& frag : object->getFragments(fb, drawCall.transform, CullMode::DrawCW)) {
+            for (const auto& frag : object->getFragments(fb, drawCall.transform, drawCall.cull)) {
                 fb.putPixel(frag.x, frag.y, frag.z, drawCall.shader(frag, sampler.get()));
             }
         }

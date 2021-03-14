@@ -12,12 +12,19 @@ float colorClip(float c) {
 
 }
 
+static const float DISC = -1;
+
+const Color Color::DISCARD = Color(DISC, 0, 0, 0);
+
 Color::Color(float a, float r, float g, float b)
     : a(colorClip(a))
     , r(colorClip(r))
     , g(colorClip(g))
     , b(colorClip(b))
 {
+    if (a == DISC) {
+        Color::a = DISC;
+    }
 }
 
 Color::Color(float r, float g, float b)
@@ -28,4 +35,8 @@ Color::Color(float r, float g, float b)
 Color::Color()
     : Color(0, 0, 0, 0)
 {
+}
+
+bool Color::isDiscard() const {
+    return a == DISC;
 }

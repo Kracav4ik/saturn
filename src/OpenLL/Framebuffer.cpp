@@ -32,6 +32,10 @@ std::vector<uint32_t> Framebuffer::getColorsARGB32() const {
 }
 
 void Framebuffer::putPixel(int x, int y, float z, Color color) {
+    if (color.isDiscard()) {
+        return;
+    }
+
     int idx = (h - 1 - y) * w + x;
 
     if (0 > x || x >= w || 0 > y || y >= h || zOrder[idx] < z) {
