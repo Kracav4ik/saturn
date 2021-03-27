@@ -1,11 +1,13 @@
 set(EXE_NAME saturn_lab2)
 
 set(EXE_SOURCES
+        Frame.cpp
+        Frame.h
         main.cpp
         MainWindow.h
         MainWindow.cpp
-        Frame.cpp
-        Frame.h
+        Polyline.cpp
+        Polyline.h
 )
 
 add_executable(${EXE_NAME} ${EXE_SOURCES})

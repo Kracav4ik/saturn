@@ -4,6 +4,8 @@
 #include <QTimer>
 #include "ui_main.h"
 
+namespace ll { class DrawAPI; }
+
 class MainWindow : public QMainWindow, private Ui::MainWindow {
 public:
     MainWindow();
@@ -15,6 +17,8 @@ private:
     void drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLeft, ll::Color colorRight);
 
     QTimer timer;
+
+    std::shared_ptr<Polylines> polylines;
 
     ll::CullMode cullMode;
 };

@@ -43,6 +43,31 @@ void DrawAPI::addLines(const std::vector<Line>& lines) {
     drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
 }
 
+void DrawAPI::drawRound(const Vertex& center, float radius, bool isDash) {
+    bool isDrawCur = true;
+    std::vector<Line> lines;
+
+    float step = M_PI / 64 / radius;
+    Vertex start{center.color, center.pos + radius * Vector4{1, 0, 0}};
+    Vertex from = start;
+    float angle = step;
+
+    while (angle < M_PI * 2) {
+        Vertex to{center.color, center.pos + radius * Vector4{cosf(angle), sinf(angle), 0}};
+        if (isDash || isDrawCur) {
+            lines.emplace_back(from, to);
+        }
+
+        isDrawCur = !isDrawCur;
+        from = to;
+        angle += step;
+    }
+
+    lines.emplace_back(from, start);
+
+    drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
+}
+
 void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
     drawCalls.emplace_back(triangles, fragmentShader, getMatrix(), cull);
 }

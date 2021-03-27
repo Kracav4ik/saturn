@@ -17,7 +17,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>lab1</string>
+   <string>lab2</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -35,31 +35,40 @@
       </item>
       <item row="0" column="1">
        <widget class="Frame" name="drawArea2">
+        <property name="cursor" stdset="0">
+         <cursorShape>CrossCursor</cursorShape>
+        </property>
         <property name="mouseTracking">
          <bool>true</bool>
         </property>
         <property name="dragMode">
-         <enum>QGraphicsView::ScrollHandDrag</enum>
+         <enum>QGraphicsView::NoDrag</enum>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="Frame" name="drawArea3">
+        <property name="cursor" stdset="0">
+         <cursorShape>CrossCursor</cursorShape>
+        </property>
         <property name="mouseTracking">
          <bool>true</bool>
         </property>
         <property name="dragMode">
-         <enum>QGraphicsView::ScrollHandDrag</enum>
+         <enum>QGraphicsView::NoDrag</enum>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
        <widget class="Frame" name="drawArea4">
+        <property name="cursor" stdset="0">
+         <cursorShape>CrossCursor</cursorShape>
+        </property>
         <property name="mouseTracking">
          <bool>true</bool>
         </property>
         <property name="dragMode">
-         <enum>QGraphicsView::ScrollHandDrag</enum>
+         <enum>QGraphicsView::NoDrag</enum>
         </property>
        </widget>
       </item>

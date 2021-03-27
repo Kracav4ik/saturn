@@ -66,6 +66,7 @@ public:
     void clear(Framebuffer& fb, const Color& color) const;
 
     void addLines(const std::vector<Line>& lines);
+    void drawRound(const Vertex& center, float radius, bool isDash);
     void addTriangles(const std::vector<Triangle>& triangles);
 
     void drawFrame(Framebuffer& fb) const;
