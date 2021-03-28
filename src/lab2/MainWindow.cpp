@@ -6,20 +6,22 @@
 
 MainWindow::MainWindow()
     : cullMode(ll::CullMode::DrawCW)
-    , polylines(std::make_shared<Polylines>())
+    , model(std::make_shared<Model>())
 {
     setupUi(this);
 
     timer.setInterval(100);
     timer.start();
 
-    drawArea1->setPolylines(polylines);
-    drawArea2->setPolylines(polylines);
-    drawArea3->setPolylines(polylines);
-    drawArea4->setPolylines(polylines);
-
 //    drawArea2->setMouseRot(ll::Matrix4x4::rotX(M_PI_2));
 //    drawArea3->setMouseRot(ll::Matrix4x4::rotY(M_PI_2));
+
+    for (const auto& drawArea : {drawArea1, drawArea2, drawArea3, drawArea4}) {
+        drawArea->setModel(model);
+        connect(drawArea, &Frame::press, model.get(), &Model::press);
+        connect(drawArea, &Frame::move, model.get(), &Model::move);
+        connect(drawArea, &Frame::release, model.get(), &Model::release);
+    }
 
     drawArea2->setAllowDragging(false);
     drawArea3->setAllowDragging(false);
@@ -48,12 +50,14 @@ MainWindow::MainWindow()
         setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
     });
 
-    auto drawFunc = [this](ll::DrawAPI& drawAPi, float angle){
+    auto initFunc = [this](ll::DrawAPI& drawAPi, float angle) {
         drawAPi.setCullMode(cullMode);
         drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
             return vert.color;
         });
+    };
 
+    auto drawFunc = [](ll::DrawAPI& drawAPi, float angle){
         {
             auto wrapper = drawAPi.saveTransform();
 
@@ -102,10 +106,10 @@ MainWindow::MainWindow()
         }
     };
 
-    drawArea1->setDrawer(drawFunc);
-    drawArea2->setDrawer(drawFunc);
-    drawArea3->setDrawer(drawFunc);
-    drawArea4->setDrawer(drawFunc);
+    for (const auto& drawArea : {drawArea1, drawArea2, drawArea3, drawArea4}) {
+        drawArea->setIniter(initFunc);
+        drawArea->setDrawer(drawFunc);
+    }
 
     connect(&timer, &QTimer::timeout, [this]() {
         static float a = 0;
@@ -151,10 +155,9 @@ void MainWindow::drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLe
         };
     };
 
-    drawAPi.addTriangles(getTrianglesFromRect(v010, v110, v000, v100));
-    drawAPi.addTriangles(getTrianglesFromRect(v000, v100, v001, v101));
-    drawAPi.addTriangles(getTrianglesFromRect(v000, v001, v010, v011));
-    drawAPi.addTriangles(getTrianglesFromRect(v011, v111, v010, v110));
-    drawAPi.addTriangles(getTrianglesFromRect(v001, v101, v011, v111));
-    drawAPi.addTriangles(getTrianglesFromRect(v110, v111, v100, v101));
+    for (const auto& triangles : {getTrianglesFromRect(v010, v110, v000, v100), getTrianglesFromRect(v000, v100, v001, v101),
+                                  getTrianglesFromRect(v000, v001, v010, v011), getTrianglesFromRect(v011, v111, v010, v110),
+                                  getTrianglesFromRect(v001, v101, v011, v111), getTrianglesFromRect(v110, v111, v100, v101)}) {
+        drawAPi.addTriangles(triangles);
+    }
 }

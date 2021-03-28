@@ -43,8 +43,7 @@ void DrawAPI::addLines(const std::vector<Line>& lines) {
     drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
 }
 
-void DrawAPI::drawRound(const Vertex& center, float radius, bool isDash) {
-    bool isDrawCur = true;
+void DrawAPI::drawRound(const Vertex& center, float radius, bool isSolid) {
     std::vector<Line> lines;
 
     float step = M_PI / 64 / radius;
@@ -54,11 +53,11 @@ void DrawAPI::drawRound(const Vertex& center, float radius, bool isDash) {
 
     while (angle < M_PI * 2) {
         Vertex to{center.color, center.pos + radius * Vector4{cosf(angle), sinf(angle), 0}};
-        if (isDash || isDrawCur) {
+        int angleDeg = angle * 180 / M_PI;
+        if (isSolid || (angleDeg % 45 < 15)) {
             lines.emplace_back(from, to);
         }
 
-        isDrawCur = !isDrawCur;
         from = to;
         angle += step;
     }
@@ -66,6 +65,32 @@ void DrawAPI::drawRound(const Vertex& center, float radius, bool isDash) {
     lines.emplace_back(from, start);
 
     drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
+}
+
+void DrawAPI::drawLinesCube(const Vector4& center, float size, Color color) {
+    ll::Vertex v000{color, center + size * ll::Vector4::direction(-0.5, -0.5, -0.5)};
+    ll::Vertex v001{color, center + size * ll::Vector4::direction(-0.5, -0.5, 0.5)};
+    ll::Vertex v010{color, center + size * ll::Vector4::direction(-0.5, 0.5, -0.5)};
+    ll::Vertex v011{color, center + size * ll::Vector4::direction(-0.5, 0.5, 0.5)};
+    ll::Vertex v100{color, center + size * ll::Vector4::direction(0.5, -0.5, -0.5)};
+    ll::Vertex v101{color, center + size * ll::Vector4::direction(0.5, -0.5, 0.5)};
+    ll::Vertex v110{color, center + size * ll::Vector4::direction(0.5, 0.5, -0.5)};
+    ll::Vertex v111{color, center + size * ll::Vector4::direction(0.5, 0.5, 0.5)};
+
+    addLines(std::vector<ll::Line> {
+            ll::Line{ v000, v001 },
+            ll::Line{ v010, v011 },
+            ll::Line{ v100, v101 },
+            ll::Line{ v110, v111 },
+            ll::Line{ v000, v100 },
+            ll::Line{ v001, v101 },
+            ll::Line{ v010, v110 },
+            ll::Line{ v011, v111 },
+            ll::Line{ v000, v010 },
+            ll::Line{ v001, v011 },
+            ll::Line{ v100, v110 },
+            ll::Line{ v101, v111 },
+    });
 }
 
 void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {

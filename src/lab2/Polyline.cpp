@@ -4,6 +4,7 @@
 
 const int NO_SELECTION = -1;
 const float RADIUS = 0.1;
+const int PIXEL_RADIUS = 10;
 
 using namespace ll;
 
@@ -67,7 +68,7 @@ int Polyline::getCurrentPreselection() const {
     return currentPreselection;
 }
 
-void Polyline::draw(DrawAPI& drawAPi) const {
+void Polyline::draw(DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const {
     std::vector<Line> lines;
     for (int i = 1; i < vertexes.size(); ++i) {
         Vertex from {color, vertexes[i-1]};
@@ -75,15 +76,19 @@ void Polyline::draw(DrawAPI& drawAPi) const {
         lines.emplace_back(from, to);
     }
     drawAPi.addLines(lines);
-    if (drawSelection) {
-        if (isValid()) {
-            drawAPi.drawRound({color, vertexes[currentSelection]}, RADIUS, true);
+    {
+        auto wrapper = drawAPi.saveTransform();
+        drawAPi.loadIdentity();
+        if (drawSelection) {
+            if (isValid()) {
+                drawAPi.drawRound({color, viewProjection * vertexes[currentSelection]}, PIXEL_RADIUS, true);
+            }
         }
-    }
 
-    if (drawPreselection) {
-        if (currentPreselection != NO_SELECTION) {
-            drawAPi.drawRound({color, vertexes[currentPreselection]}, RADIUS, false);
+        if (drawPreselection) {
+            if (currentPreselection != NO_SELECTION) {
+                drawAPi.drawRound({color, viewProjection * vertexes[currentPreselection]}, PIXEL_RADIUS, false);
+            }
         }
     }
 }

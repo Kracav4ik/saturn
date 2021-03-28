@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OpenLL/Vector4.h"
+#include "OpenLL/Matrix4x4.h"
 #include "OpenLL/Color.h"
 
 #include <vector>
@@ -10,6 +11,7 @@ namespace ll { class DrawAPI; }
 
 extern const int NO_SELECTION;
 extern const float RADIUS;
+extern const int PIXEL_RADIUS;
 
 class Polyline : public QObject {
 Q_OBJECT
@@ -30,7 +32,7 @@ public:
     std::vector<ll::Vector4> getVertexes() const;
     ll::Vector4 getSelVertex() const;
 
-    void draw(ll::DrawAPI& drawAPi) const;
+    void draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const;
 
     void setDrawSelection(bool drawSelection);
     void setDrawPreselection(bool drawPresel);

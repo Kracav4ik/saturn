@@ -6,6 +6,8 @@ set(EXE_SOURCES
         main.cpp
         MainWindow.h
         MainWindow.cpp
+        Model.cpp
+        Model.h
         Polyline.cpp
         Polyline.h
 )

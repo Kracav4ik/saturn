@@ -18,7 +18,7 @@ private:
 
     QTimer timer;
 
-    std::shared_ptr<Polylines> polylines;
+    std::shared_ptr<Model> model;
 
     ll::CullMode cullMode;
 };
