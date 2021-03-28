@@ -15,6 +15,7 @@ public:
     explicit Frame(QWidget* parent);
 
     void drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix4x4 frameRot, float angle);
+    ll::Matrix4x4 getViewProjection() const;
     void setIniter(DrawFunc initFunc);
     void setDrawer(DrawFunc drawFunc);
     void reset();
@@ -25,6 +26,7 @@ public:
 
 signals:
     void press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 commonMatrix);
+    void pressRight();
     void move(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 commonMatrix);
     void release();
 
@@ -43,5 +45,4 @@ private:
     ll::DrawAPI drawAPi;
     ll::Framebuffer fb;
     QGraphicsScene scene;
-    QPoint currentMouseCameraPos;
 };

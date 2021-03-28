@@ -4,6 +4,11 @@
 #include <QDragMoveEvent>
 #include <QGuiApplication>
 
+void recallToFunc(const QPoint& pos, Frame* frame, void(Frame::*func)(const ll::Vector4&, bool, ll::Matrix4x4)) {
+    auto curQuery = QGuiApplication::queryKeyboardModifiers();
+    (frame->*func)(ll::Vector4::position(pos.x(), pos.y(), 0), (curQuery & Qt::ShiftModifier) != 0, frame->getViewProjection());
+}
+
 Frame::Frame(QWidget* parent)
     : QGraphicsView(parent)
     , fb(320, 240)
@@ -41,6 +46,10 @@ void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix
     show();
 }
 
+ll::Matrix4x4 Frame::getViewProjection() const {
+    return viewProjection;
+}
+
 void Frame::setIniter(DrawFunc initFunc) {
     init = std::move(initFunc);
 }
@@ -55,25 +64,25 @@ void Frame::reset() {
 
 void Frame::mousePressEvent(QMouseEvent* event) {
     dragging = true;
-    auto curQuery = QGuiApplication::queryKeyboardModifiers();
-    auto point = event->pos();
-    press(ll::Vector4::position(point.x(), point.y(), 0), (curQuery & Qt::ShiftModifier) != 0, viewProjection);
+    if ((event->buttons() & Qt::LeftButton) != 0) {
+        recallToFunc(event->pos(), this, &Frame::press);
+    } else if ((event->buttons() & Qt::RightButton) != 0) {
+        pressRight();
+    }
 }
 
 void Frame::mouseMoveEvent(QMouseEvent* event) {
+    static QPoint currentMouseCameraPos = event->pos();
+
     auto prevMouseCameraPos = currentMouseCameraPos;
     currentMouseCameraPos = event->pos();
 
-    if (dragging) {
+    if (dragging && allowRot) {
         auto diff = currentMouseCameraPos - prevMouseCameraPos;
-        if (allowRot) {
-            currRot += diff;
-        }
+        currRot += diff;
     }
 
-    auto curQuery = QGuiApplication::queryKeyboardModifiers();
-    auto point = event->pos();
-    move(ll::Vector4::position(point.x(), point.y(), 0), (curQuery & Qt::ShiftModifier) != 0, viewProjection);
+    recallToFunc(event->pos(), this, &Frame::move);
 }
 
 void Frame::mouseReleaseEvent(QMouseEvent* event) {
@@ -88,4 +97,3 @@ void Frame::setAllowDragging(bool allowDrag) {
 void Frame::setModel(const std::shared_ptr<Model>& newModel) {
     model = newModel;
 }
-

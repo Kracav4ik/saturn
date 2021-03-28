@@ -44,7 +44,12 @@ void Model::press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProj
         selectPolyline(lastPresel, false);
         lastSel = lastPresel;
     }
+}
 
+void Model::pressRight() {
+    if (lastPresel != NO_SELECTION) {
+        polylines[lastPresel]->removeVertex();
+    }
 }
 
 void Model::move(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection) {

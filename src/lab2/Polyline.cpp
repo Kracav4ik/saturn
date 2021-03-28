@@ -37,8 +37,12 @@ void Polyline::addVertex(const Vector4& pos) {
 }
 
 void Polyline::removeVertex() {
-    if (isValid()) {
-        vertexes.erase(vertexes.begin() + currentSelection);
+    if(currentPreselection != NO_SELECTION) {
+        if (currentSelection == currentPreselection) {
+            currentSelection = NO_SELECTION;
+        }
+        vertexes.erase(vertexes.begin() + currentPreselection);
+        currentPreselection = NO_SELECTION;
     }
 }
 
@@ -114,7 +118,7 @@ void Polyline::select() {
 }
 
 void Polyline::createNew(const Vector4& pos) {
-    if (currentSelection != NO_SELECTION) {
+    if (currentSelection != NO_SELECTION && drawSelection) {
         addVertex(pos);
     }
 }

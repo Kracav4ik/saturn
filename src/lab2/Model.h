@@ -19,6 +19,7 @@ public:
 
 public slots:
     void press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection);
+    void pressRight();
     void move(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection);
     void release();
 

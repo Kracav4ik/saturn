@@ -19,6 +19,7 @@ MainWindow::MainWindow()
     for (const auto& drawArea : {drawArea1, drawArea2, drawArea3, drawArea4}) {
         drawArea->setModel(model);
         connect(drawArea, &Frame::press, model.get(), &Model::press);
+        connect(drawArea, &Frame::pressRight, model.get(), &Model::pressRight);
         connect(drawArea, &Frame::move, model.get(), &Model::move);
         connect(drawArea, &Frame::release, model.get(), &Model::release);
     }
