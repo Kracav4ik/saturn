@@ -17,6 +17,10 @@ Q_OBJECT
 public:
     void draw(ll::DrawAPI& drawApi, ll::Matrix4x4 viewProjection);
 
+    bool getLastSelVis() const;
+    ll::Vector4 getSelPoint() const;
+    void setSelPoint(const ll::Vector4& vec);
+
 public slots:
     void press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection);
     void pressRight();
@@ -25,7 +29,7 @@ public slots:
 
 signals:
     void clickWithShift(const ll::Vector4& pos);
-    void click(const ll::Vector4& pos);
+    void click();
     void presel(int idx);
 
 private:

@@ -72,6 +72,10 @@ int Polyline::getCurrentPreselection() const {
     return currentPreselection;
 }
 
+bool Polyline::isDrawSelection() const {
+    return drawSelection && isValid();
+}
+
 void Polyline::draw(DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const {
     std::vector<Line> lines;
     for (int i = 1; i < vertexes.size(); ++i) {
@@ -97,7 +101,7 @@ void Polyline::draw(DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const {
     }
 }
 
-std::vector<Vector4> Polyline::getVertexes() const {
+const std::vector<ll::Vector4>& Polyline::getVertexes() const {
     return vertexes;
 }
 

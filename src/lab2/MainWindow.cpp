@@ -16,11 +16,22 @@ MainWindow::MainWindow()
 //    drawArea2->setMouseRot(ll::Matrix4x4::rotX(M_PI_2));
 //    drawArea3->setMouseRot(ll::Matrix4x4::rotY(M_PI_2));
 
+    auto updateXYZ = [this]() {
+        xyzZone->setEnabled(model->getLastSelVis());
+        if (xyzZone->isEnabled()) {
+            auto vec = model->getSelPoint();
+            xSB->setValue(vec.x);
+            ySB->setValue(vec.y);
+            zSB->setValue(vec.z);
+        }
+    };
+
     for (const auto& drawArea : {drawArea1, drawArea2, drawArea3, drawArea4}) {
         drawArea->setModel(model);
         connect(drawArea, &Frame::press, model.get(), &Model::press);
         connect(drawArea, &Frame::pressRight, model.get(), &Model::pressRight);
         connect(drawArea, &Frame::move, model.get(), &Model::move);
+        connect(drawArea, &Frame::move, updateXYZ);
         connect(drawArea, &Frame::release, model.get(), &Model::release);
     }
 
@@ -29,11 +40,25 @@ MainWindow::MainWindow()
     drawArea4->setAllowDragging(false);
 
     connect(reset, &QPushButton::clicked, [this]() {
-        drawArea1->reset();
-        drawArea2->reset();
-        drawArea3->reset();
-        drawArea4->reset();
+        for (const auto& drawArea : {drawArea1, drawArea2, drawArea3, drawArea4}) {
+            drawArea->reset();
+        }
     });
+
+    connect(model.get(), &Model::click, updateXYZ);
+
+    connect(xSB, &QDoubleSpinBox::textChanged, [this]() {
+        model->setSelPoint(ll::Vector4::position( xSB->value(), ySB->value(), zSB->value()));
+    });
+
+    connect(ySB, &QDoubleSpinBox::textChanged, [this]() {
+        model->setSelPoint(ll::Vector4::position( xSB->value(), ySB->value(), zSB->value()));
+    });
+
+    connect(zSB, &QDoubleSpinBox::textChanged, [this]() {
+        model->setSelPoint(ll::Vector4::position( xSB->value(), ySB->value(), zSB->value()));
+    });
+
 
     connect(cwRB, &QRadioButton::clicked, [this]() {
         cullMode = ll::CullMode::DrawCW;

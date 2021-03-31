@@ -28,8 +28,9 @@ public:
     void changeColor(ll::Color newColor);
     int getCurrentSelection() const;
     int getCurrentPreselection() const;
+    bool isDrawSelection() const;
 
-    std::vector<ll::Vector4> getVertexes() const;
+    const std::vector<ll::Vector4>& getVertexes() const;
     ll::Vector4 getSelVertex() const;
 
     void draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const;

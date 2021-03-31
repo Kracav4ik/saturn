@@ -21,6 +21,26 @@ void Model::draw(ll::DrawAPI& drawApi, ll::Matrix4x4 viewProjection) {
     }
 }
 
+bool Model::getLastSelVis() const {
+    if (lastSel != NO_SELECTION) {
+        return polylines[lastSel]->isDrawSelection();
+    }
+    return false;
+}
+
+ll::Vector4 Model::getSelPoint() const {
+    if (lastSel != NO_SELECTION) {
+        return polylines[lastSel]->getSelVertex();
+    }
+    return {};
+}
+
+void Model::setSelPoint(const ll::Vector4& vec) {
+    if (lastSel != NO_SELECTION) {
+        polylines[lastSel]->setPos(vec);
+    }
+}
+
 void Model::press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection) {
     isShiftPressed = withShift;
     currentMouseCameraPos = pos;
@@ -40,7 +60,7 @@ void Model::press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProj
         connect(this, &Model::click, polylines.back().get(), &Polyline::select);
         connect(this, &Model::presel, polylines.back().get(), &Polyline::preselect);
     } else {
-        emit click(currentMouseWorldPos);
+        emit click();
         selectPolyline(lastPresel, false);
         lastSel = lastPresel;
     }
@@ -49,6 +69,11 @@ void Model::press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProj
 void Model::pressRight() {
     if (lastPresel != NO_SELECTION) {
         polylines[lastPresel]->removeVertex();
+        if (polylines[lastPresel]->getVertexes().size() == 0) {
+            polylines.erase(polylines.begin() + lastPresel);
+            lastSel = NO_SELECTION;
+            lastPresel = NO_SELECTION;
+        }
     }
 }
 
