@@ -11,6 +11,7 @@ enum class CullMode;
 
 struct Shape {
     virtual std::vector<Fragment> getFragments(Framebuffer& fb, const Matrix4x4& transform, CullMode cull) const = 0;
+    virtual ~Shape() = default;
 };
 
 }

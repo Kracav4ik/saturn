@@ -9,6 +9,8 @@ set(LIBRARY_SOURCES
         Line.cpp
         Line.h
         Matrix4x4.h
+        ParabolicCurve.cpp
+        ParabolicCurve.h
         Sampler.cpp
         Sampler.h
         Scene.cpp

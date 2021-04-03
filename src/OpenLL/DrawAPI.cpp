@@ -43,6 +43,10 @@ void DrawAPI::addLines(const std::vector<Line>& lines) {
     drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
 }
 
+void DrawAPI::addParabolicCurves(const std::vector<ParabolicCurve>& curves) {
+    drawCalls.emplace_back(curves, fragmentShader, getMatrix(), cull);
+}
+
 void DrawAPI::drawRound(const Vertex& center, float radius, bool isSolid) {
     std::vector<Line> lines;
 
@@ -130,9 +134,6 @@ Matrix4x4 DrawAPI::getMatrix() const {
     } else {
         return stack.top();
     }
-}
-
-void DrawAPI::processFrags(Framebuffer& fb, const Triangle& triangle, const Shader& shader, const Matrix4x4& transform) const {
 }
 
 DrawAPI::TransformWrapper DrawAPI::saveTransform() {

@@ -5,6 +5,7 @@
 #include "Sampler.h"
 #include "Shader.h"
 #include "Line.h"
+#include "ParabolicCurve.h"
 
 #include <vector>
 #include <stack>
@@ -66,6 +67,7 @@ public:
     void clear(Framebuffer& fb, const Color& color) const;
 
     void addLines(const std::vector<Line>& lines);
+    void addParabolicCurves(const std::vector<ParabolicCurve>& curves);
     void drawRound(const Vertex& center, float radius, bool isSolid);
     void drawLinesCube(const Vector4& center, float size, Color color);
     void addTriangles(const std::vector<Triangle>& triangles);
@@ -81,7 +83,6 @@ public:
 
 private:
     Matrix4x4 getMatrix() const;
-    void processFrags(Framebuffer& fb, const Triangle& triangle, const Shader& shader, const Matrix4x4& transform) const;
 
     std::unique_ptr<Sampler> sampler;
     Shader fragmentShader;

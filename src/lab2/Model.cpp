@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "OpenLL/DrawAPI.h"
+#include "OpenLL/ParabolicCurve.h"
 
 void Model::draw(ll::DrawAPI& drawApi, ll::Matrix4x4 viewProjection) {
     if (isShiftPressed) {
@@ -18,6 +19,7 @@ void Model::draw(ll::DrawAPI& drawApi, ll::Matrix4x4 viewProjection) {
 
     for (const auto& polyline : polylines) {
         polyline->draw(drawApi, viewProjection);
+        drawApi.addParabolicCurves({ll::ParabolicCurve(polyline->getVertexes())});
     }
 }
 
