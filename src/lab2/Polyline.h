@@ -37,6 +37,7 @@ public:
 
     void setDrawSelection(bool drawSelection);
     void setDrawPreselection(bool drawPresel);
+    void setDrawLines(bool drawLines);
 
 public slots:
     void select();
@@ -49,6 +50,7 @@ private:
     bool isLastSelected() const;
 
     std::vector<ll::Vector4> vertexes;
+    bool drawLines;
     bool drawSelection;
     bool drawPreselection;
     int currentPreselection;

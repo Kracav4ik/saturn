@@ -20,6 +20,7 @@ public:
     bool getLastSelVis() const;
     ll::Vector4 getSelPoint() const;
     void setSelPoint(const ll::Vector4& vec);
+    void setDrawLines(bool isDraw);
 
 public slots:
     void press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection);

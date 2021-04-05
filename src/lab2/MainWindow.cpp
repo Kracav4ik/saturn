@@ -5,16 +5,12 @@
 #include <QWheelEvent>
 
 MainWindow::MainWindow()
-    : cullMode(ll::CullMode::DrawCW)
-    , model(std::make_shared<Model>())
+    : model(std::make_shared<Model>())
 {
     setupUi(this);
 
     timer.setInterval(100);
     timer.start();
-
-//    drawArea2->setMouseRot(ll::Matrix4x4::rotX(M_PI_2));
-//    drawArea3->setMouseRot(ll::Matrix4x4::rotY(M_PI_2));
 
     auto updateXYZ = [this]() {
         xyzZone->setEnabled(model->getLastSelVis());
@@ -45,6 +41,10 @@ MainWindow::MainWindow()
         }
     });
 
+    connect(drawLines, &QCheckBox::clicked, [this](bool isDraw) {
+        model->setDrawLines(isDraw);
+    });
+
     connect(model.get(), &Model::click, updateXYZ);
 
     connect(xSB, &QDoubleSpinBox::textChanged, [this]() {
@@ -59,31 +59,18 @@ MainWindow::MainWindow()
         model->setSelPoint(ll::Vector4::position( xSB->value(), ySB->value(), zSB->value()));
     });
 
-
-    connect(cwRB, &QRadioButton::clicked, [this]() {
-        cullMode = ll::CullMode::DrawCW;
-    });
-
-    connect(ccwRB, &QRadioButton::clicked, [this]() {
-        cullMode = ll::CullMode::DrawCCW;
-    });
-
-    connect(bothRB, &QRadioButton::clicked, [this]() {
-        cullMode = ll::CullMode::DrawBoth;
-    });
-
     connect(zoomSB, &QDoubleSpinBox::textChanged, [this]() {
         setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
     });
 
     auto initFunc = [this](ll::DrawAPI& drawAPi, float angle) {
-        drawAPi.setCullMode(cullMode);
         drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
             return vert.color;
         });
     };
 
     auto drawFunc = [](ll::DrawAPI& drawAPi, float angle){
+        /*
         {
             auto wrapper = drawAPi.saveTransform();
 
@@ -118,6 +105,7 @@ MainWindow::MainWindow()
                  ll::Line{ v101, v111 },
             });
         }
+         //*/
 
         {
             ll::Vertex v000{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};

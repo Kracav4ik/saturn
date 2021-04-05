@@ -43,6 +43,12 @@ void Model::setSelPoint(const ll::Vector4& vec) {
     }
 }
 
+void Model::setDrawLines(bool isDraw) {
+    for (const auto& polyline : polylines) {
+        polyline->setDrawLines(isDraw);
+    }
+}
+
 void Model::press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 viewProjection) {
     isShiftPressed = withShift;
     currentMouseCameraPos = pos;

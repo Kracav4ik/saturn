@@ -27,12 +27,12 @@ Polyline::Polyline()
 }
 
 void Polyline::addVertex(const Vector4& pos) {
-    if (isFirstSelected()) {
-        vertexes.insert(vertexes.begin(), pos);
-    }
     if (isLastSelected()) {
         vertexes.push_back(pos);
         currentSelection++;
+    }
+    if (isFirstSelected()) {
+        vertexes.insert(vertexes.begin(), pos);
     }
 }
 
@@ -83,7 +83,9 @@ void Polyline::draw(DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const {
         Vertex to {color, vertexes[i]};
         lines.emplace_back(from, to);
     }
-    drawAPi.addLines(lines);
+    if (drawLines) {
+        drawAPi.addLines(lines);
+    }
     {
         auto wrapper = drawAPi.saveTransform();
         drawAPi.loadIdentity();
@@ -149,4 +151,8 @@ void Polyline::setDrawSelection(bool drawSel) {
 
 void Polyline::setDrawPreselection(bool drawPresel) {
     drawPreselection = drawPresel;
+}
+
+void Polyline::setDrawLines(bool isDraw) {
+    drawLines = isDraw;
 }

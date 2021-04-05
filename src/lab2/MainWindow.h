@@ -19,6 +19,4 @@ private:
     QTimer timer;
 
     std::shared_ptr<Model> model;
-
-    ll::CullMode cullMode;
 };
