@@ -81,12 +81,14 @@ public:
 
     TransformWrapper saveTransform();
 
+    static std::vector<ll::Vector4> getCubeVexes(const Vector4& center, float size);
+
 private:
     Matrix4x4 getMatrix() const;
 
     std::unique_ptr<Sampler> sampler;
     Shader fragmentShader;
-    CullMode cull = CullMode::DrawCW;
+    CullMode cull = CullMode::DrawBoth;
     std::vector<DrawCall> drawCalls;
     std::stack<Matrix4x4> stack;
 };

@@ -72,28 +72,21 @@ void DrawAPI::drawRound(const Vertex& center, float radius, bool isSolid) {
 }
 
 void DrawAPI::drawLinesCube(const Vector4& center, float size, Color color) {
-    ll::Vertex v000{color, center + size * ll::Vector4::direction(-0.5, -0.5, -0.5)};
-    ll::Vertex v001{color, center + size * ll::Vector4::direction(-0.5, -0.5, 0.5)};
-    ll::Vertex v010{color, center + size * ll::Vector4::direction(-0.5, 0.5, -0.5)};
-    ll::Vertex v011{color, center + size * ll::Vector4::direction(-0.5, 0.5, 0.5)};
-    ll::Vertex v100{color, center + size * ll::Vector4::direction(0.5, -0.5, -0.5)};
-    ll::Vertex v101{color, center + size * ll::Vector4::direction(0.5, -0.5, 0.5)};
-    ll::Vertex v110{color, center + size * ll::Vector4::direction(0.5, 0.5, -0.5)};
-    ll::Vertex v111{color, center + size * ll::Vector4::direction(0.5, 0.5, 0.5)};
+    auto vexes = getCubeVexes(center, size);
 
     addLines(std::vector<ll::Line> {
-            ll::Line{ v000, v001 },
-            ll::Line{ v010, v011 },
-            ll::Line{ v100, v101 },
-            ll::Line{ v110, v111 },
-            ll::Line{ v000, v100 },
-            ll::Line{ v001, v101 },
-            ll::Line{ v010, v110 },
-            ll::Line{ v011, v111 },
-            ll::Line{ v000, v010 },
-            ll::Line{ v001, v011 },
-            ll::Line{ v100, v110 },
-            ll::Line{ v101, v111 },
+            ll::Line{ {color, vexes[0]}, {color, vexes[1]} },
+            ll::Line{ {color, vexes[2]}, {color, vexes[3]} },
+            ll::Line{ {color, vexes[4]}, {color, vexes[5]} },
+            ll::Line{ {color, vexes[6]}, {color, vexes[7]} },
+            ll::Line{ {color, vexes[0]}, {color, vexes[4]} },
+            ll::Line{ {color, vexes[1]}, {color, vexes[5]} },
+            ll::Line{ {color, vexes[2]}, {color, vexes[6]} },
+            ll::Line{ {color, vexes[3]}, {color, vexes[7]} },
+            ll::Line{ {color, vexes[0]}, {color, vexes[2]} },
+            ll::Line{ {color, vexes[1]}, {color, vexes[3]} },
+            ll::Line{ {color, vexes[4]}, {color, vexes[6]} },
+            ll::Line{ {color, vexes[5]}, {color, vexes[7]} },
     });
 }
 
@@ -140,3 +133,15 @@ DrawAPI::TransformWrapper DrawAPI::saveTransform() {
     return DrawAPI::TransformWrapper(*this);
 }
 
+std::vector<ll::Vector4> DrawAPI::getCubeVexes(const Vector4& center, float size) {
+    return {
+        center + size * ll::Vector4::direction(-0.5, -0.5, -0.5),
+        center + size * ll::Vector4::direction(-0.5, -0.5, 0.5),
+        center + size * ll::Vector4::direction(-0.5, 0.5, -0.5),
+        center + size * ll::Vector4::direction(-0.5, 0.5, 0.5),
+        center + size * ll::Vector4::direction(0.5, -0.5, -0.5),
+        center + size * ll::Vector4::direction(0.5, -0.5, 0.5),
+        center + size * ll::Vector4::direction(0.5, 0.5, -0.5),
+        center + size * ll::Vector4::direction(0.5, 0.5, 0.5),
+    };
+}

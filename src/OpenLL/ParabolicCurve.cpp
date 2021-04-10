@@ -6,7 +6,11 @@
 
 using namespace ll;
 
-ParabolicCurve::ParabolicCurve(std::vector<Vector4> vertexes) : vertexes(std::move(vertexes)) {}
+ParabolicCurve::ParabolicCurve(std::vector<Vector4> vertexes, bool solidColor, Color color)
+    : vertexes(std::move(vertexes))
+    , solidColor(solidColor)
+    , color(color)
+{}
 
 std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix4x4& transform, CullMode cull) const {
     auto frags = std::vector<Fragment>();
@@ -17,11 +21,20 @@ std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix
                + .5f * t * (t + 1) * p3;
     };
 
-    Color colors[3] {
-        Color(1, 0, 0),
-        Color(0, 1, 0),
-        Color(0, 0, 1),
-    };
+    std::vector<Color> colors;
+    if (solidColor) {
+        colors = std::vector<Color> {
+                color,
+                color,
+                color,
+        };
+    } else {
+        colors = std::vector<Color> {
+                Color(1, 0, 0),
+                Color(0, 1, 0),
+                Color(0, 0, 1),
+        };
+    }
 
     int colorIdx = 0;
 
@@ -33,7 +46,7 @@ std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix
         const auto& p3 = vertexes[i + 1];
         for (float t = 0; t < 1; t += .001f) {
             Vector4 p_t;
-            auto color = (1 - t) * colors[colorIdx % 3] + t * colors[(colorIdx + 1) % 3];
+            auto selectedColor = (1 - t) * colors[colorIdx % 3] + t * colors[(colorIdx + 1) % 3];
             if (i == 0) {
                 p_t = Pt(t - 1, p2, p3, vertexes[i + 2]);
             } else if (i == top) {
@@ -42,7 +55,7 @@ std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix
                 p_t = (1 - t) * Pt(t, vertexes[i - 1], p2, p3) + t * Pt(t - 1, p2, p3, vertexes[i + 2]);
             }
             auto point = (transform * p_t).toHomogenous();
-            frags.push_back({static_cast<int>(roundf(point.x)), static_cast<int>(roundf(point.y)), point.z, {}, color});
+            frags.push_back({static_cast<int>(roundf(point.x)), static_cast<int>(roundf(point.y)), point.z, {}, selectedColor});
         }
         colorIdx++;
     }

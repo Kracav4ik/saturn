@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <ostream>
 
 namespace ll {
 
@@ -94,6 +95,10 @@ inline Vector4 cross(const Vector4& v1, const Vector4& v2) {
         return v1.data[i] * v2.data[j] - v1.data[j] * v2.data[i];
     };
     return {subCross(1, 2), subCross(2, 0), subCross(0, 1)};
+}
+
+inline std::ostream& operator<<(std::ostream& ostream, const Vector4& v) {
+    return ostream << "{ " << "x: " << v.x << "; y: " << v.y << "; z: " << v.z << "; w: " << v.w << "; }";
 }
 
 }
