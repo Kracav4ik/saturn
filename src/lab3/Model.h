@@ -6,9 +6,7 @@
 #include <memory>
 #include <QObject>
 
-class Mesh;
-
-using Meshes = std::vector<std::unique_ptr<Mesh>>;
+using SADs = std::vector<std::unique_ptr<SAD>>;
 
 namespace ll { class DrawAPI; };
 
@@ -17,10 +15,13 @@ class QMouseEvent;
 class Model : public QObject{
 Q_OBJECT
 public:
+    explicit Model(QObject* parent);
+
     void draw(ll::DrawAPI& drawApi, ll::Matrix4x4 viewProjection);
 
     bool getLastSelVis() const;
     ll::Vector4 getSelPoint() const;
+    std::vector<ll::Vector4> getSelVexes() const;
     void setSelPoint(const ll::Vector4& vec);
     void setDrawLines(bool isDraw);
     void setDrawTriangles(bool drawTriangles);
@@ -37,7 +38,7 @@ signals:
     void presel(int idx);
 
 private:
-    void selectMesh(int idx, bool presel);
+    void selectSAD(int idx, bool presel);
 
     bool dragging = false;
     bool isInside = false;
@@ -48,5 +49,5 @@ private:
     ll::Vector4 currentMouseCameraPos;
     ll::Vector4 currentTranslatedMouseCameraPos;
     ll::Vector4 currentMouseWorldPos;
-    Meshes meshes;
+    SADs sads;
 };

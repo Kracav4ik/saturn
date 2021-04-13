@@ -112,10 +112,10 @@ MainWindow::MainWindow()
             ll::Vertex v001{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 3)};
             ll::Vertex v010{ll::Color(0, 1, 0), ll::Vector4::position(0, 3, 0)};
             ll::Vertex v100{ll::Color(1, 0, 0), ll::Vector4::position(3, 0, 0)};
-            drawAPi.addLines(std::vector<ll::Line> {
-                    ll::Line{ v000, v001 },
-                    ll::Line{ v000, v010 },
-                    ll::Line{ v000, v100 },
+            drawAPi.addShapes<ll::Line>({
+                    { v000, v001 },
+                    { v000, v010 },
+                    { v000, v100 },
             });
         }
     };
@@ -172,6 +172,6 @@ void MainWindow::drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLe
     for (const auto& triangles : {getTrianglesFromRect(v010, v110, v000, v100), getTrianglesFromRect(v000, v100, v001, v101),
                                   getTrianglesFromRect(v000, v001, v010, v011), getTrianglesFromRect(v011, v111, v010, v110),
                                   getTrianglesFromRect(v001, v101, v011, v111), getTrianglesFromRect(v110, v111, v100, v101)}) {
-        drawAPi.addTriangles(triangles);
+        drawAPi.addShapes(triangles);
     }
 }

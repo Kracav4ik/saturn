@@ -4,18 +4,6 @@
 
 using namespace ll;
 
-template<typename T>
-DrawCall::DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform, CullMode cull)
-    : shader(std::move(shader))
-    , transform(std::move(transform))
-    , cull(cull)
-{
-    objects.reserve(vec.size());
-    for (const auto& item : vec) {
-        objects.template emplace_back(new T(item));
-    }
-}
-
 DrawCall::DrawCall()
     : transform(Matrix4x4::zero())
 {
@@ -37,14 +25,6 @@ void DrawAPI::reset() {
 void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
     std::fill(fb.colors.begin(), fb.colors.end(), color);
     std::fill(fb.zOrder.begin(), fb.zOrder.end(), 10);
-}
-
-void DrawAPI::addLines(const std::vector<Line>& lines) {
-    drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
-}
-
-void DrawAPI::addParabolicCurves(const std::vector<ParabolicCurve>& curves) {
-    drawCalls.emplace_back(curves, fragmentShader, getMatrix(), cull);
 }
 
 void DrawAPI::drawRound(const Vertex& center, float radius, bool isSolid) {
@@ -74,24 +54,27 @@ void DrawAPI::drawRound(const Vertex& center, float radius, bool isSolid) {
 void DrawAPI::drawLinesCube(const Vector4& center, float size, Color color) {
     auto vexes = getCubeVexes(center, size);
 
-    addLines(std::vector<ll::Line> {
-            ll::Line{ {color, vexes[0]}, {color, vexes[1]} },
-            ll::Line{ {color, vexes[2]}, {color, vexes[3]} },
-            ll::Line{ {color, vexes[4]}, {color, vexes[5]} },
-            ll::Line{ {color, vexes[6]}, {color, vexes[7]} },
-            ll::Line{ {color, vexes[0]}, {color, vexes[4]} },
-            ll::Line{ {color, vexes[1]}, {color, vexes[5]} },
-            ll::Line{ {color, vexes[2]}, {color, vexes[6]} },
-            ll::Line{ {color, vexes[3]}, {color, vexes[7]} },
-            ll::Line{ {color, vexes[0]}, {color, vexes[2]} },
-            ll::Line{ {color, vexes[1]}, {color, vexes[3]} },
-            ll::Line{ {color, vexes[4]}, {color, vexes[6]} },
-            ll::Line{ {color, vexes[5]}, {color, vexes[7]} },
+    addShapes<ll::Line>( {
+            { {color, vexes[0]}, {color, vexes[1]} },
+            { {color, vexes[2]}, {color, vexes[3]} },
+            { {color, vexes[4]}, {color, vexes[5]} },
+            { {color, vexes[6]}, {color, vexes[7]} },
+            { {color, vexes[0]}, {color, vexes[4]} },
+            { {color, vexes[1]}, {color, vexes[5]} },
+            { {color, vexes[2]}, {color, vexes[6]} },
+            { {color, vexes[3]}, {color, vexes[7]} },
+            { {color, vexes[0]}, {color, vexes[2]} },
+            { {color, vexes[1]}, {color, vexes[3]} },
+            { {color, vexes[4]}, {color, vexes[6]} },
+            { {color, vexes[5]}, {color, vexes[7]} },
     });
 }
 
-void DrawAPI::addTriangles(const std::vector<Triangle>& triangles) {
-    drawCalls.emplace_back(triangles, fragmentShader, getMatrix(), cull);
+void DrawAPI::drawSphere(const Vertex& center, float radius) {
+    for (float i = 0; i < radius; i += radius / 10) {
+        drawRound({center.color, center.pos - Vector4::direction(0, 0, radius - i)}, i, true);
+        drawRound({center.color, center.pos + Vector4::direction(0, 0, radius - i)}, i, true);
+    }
 }
 
 void DrawAPI::drawFrame(Framebuffer& fb) const {

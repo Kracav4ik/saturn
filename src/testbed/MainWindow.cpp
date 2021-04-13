@@ -75,9 +75,9 @@ MainWindow::MainWindow()
             ll::Vertex vb1{ll::Color(1, 0, 0), ll::Vector4::position(2, 0, -3), ll::Vector2{1, 0}};
             ll::Vertex vb2{ll::Color(0, 1, 0), ll::Vector4::position(-2, 0, 3), ll::Vector2{0, 1}};
             ll::Vertex vb3{ll::Color(0, 0, 1), ll::Vector4::position(2, 0, 3), ll::Vector2{1, 1}};
-            drawAPi.addTriangles({
-                    ll::Triangle{ vb0, vb1, vb2 },
-                    ll::Triangle{ vb2, vb1, vb3 },
+            drawAPi.addShapes<ll::Triangle>({
+                    { vb0, vb1, vb2 },
+                    { vb2, vb1, vb3 },
             });
 
             std::vector<ll::Line> lines;
@@ -88,7 +88,7 @@ MainWindow::MainWindow()
                         {ll::Color(0, 0, 0), ll::Vector4::position(4*t -2, 2, 3), ll::Vector2{t, 1}}
                 ));
             }
-            drawAPi.addLines(lines);
+            drawAPi.addShapes(lines);
         }
 
         drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
@@ -103,29 +103,29 @@ MainWindow::MainWindow()
         ll::Vertex v2{ll::Color(0, 1, 0), ll::Vector4::position(0, 1, 0)};
         ll::Vertex v4{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 1)};
 
-        drawAPi.addTriangles({
-            ll::Triangle{ v0, v1, v2 },
-            ll::Triangle{ v0, v2, v4 },
-            ll::Triangle{ v0, v4, v1 },
-            ll::Triangle{ v2, v1, v4 },
+        drawAPi.addShapes<ll::Triangle>({
+            { v0, v1, v2 },
+            { v0, v2, v4 },
+            { v0, v4, v1 },
+            { v2, v1, v4 },
         });
 
         v0.pos.z = v1.pos.z = v2.pos.z = 1;
         v4.pos.z = 2;
-        drawAPi.addTriangles({
-            ll::Triangle{ v0, v1, v2 },
-            ll::Triangle{ v0, v2, v4 },
-            ll::Triangle{ v0, v4, v1 },
-            ll::Triangle{ v2, v1, v4 },
+        drawAPi.addShapes<ll::Triangle>({
+            { v0, v1, v2 },
+            { v0, v2, v4 },
+            { v0, v4, v1 },
+            { v2, v1, v4 },
         });
 
         v0.pos.z = v1.pos.z = v2.pos.z = 2;
         v4.pos.z = 3;
-        drawAPi.addTriangles({
-            ll::Triangle{ v0, v1, v2 },
-            ll::Triangle{ v0, v2, v4 },
-            ll::Triangle{ v0, v4, v1 },
-            ll::Triangle{ v2, v1, v4 },
+        drawAPi.addShapes<ll::Triangle>({
+            { v0, v1, v2 },
+            { v0, v2, v4 },
+            { v0, v4, v1 },
+            { v2, v1, v4 },
         });
         drawAPi.drawFrame(fb);
         push_prof("frame draw");

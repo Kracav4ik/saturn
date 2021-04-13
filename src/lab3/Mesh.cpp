@@ -19,9 +19,9 @@ struct TripletsVector4 {
 
     void draw(DrawAPI& drawAPi, Color color, const std::vector<ll::Vector4>& vec) const {
         if (drawTriangles) {
-            drawAPi.addTriangles({{{color, vec[p1]}, {color, vec[p2]}, {color, vec[p3]}}});
+            drawAPi.addShapes<Triangle>({{{color, vec[p1]}, {color, vec[p2]}, {color, vec[p3]}}});
         } else {
-            drawAPi.addLines({
+            drawAPi.addShapes<Line>({
                 {{color, vec[p1], {}}, {color, vec[p2], {}}},
                 {{color, vec[p1], {}}, {color, vec[p3], {}}},
                 {{color, vec[p2], {}}, {color, vec[p3], {}}},
@@ -31,10 +31,9 @@ struct TripletsVector4 {
 };
 
 void Mesh::draw(DrawAPI& drawAPi, Matrix4x4 viewProjection) const {
+    SAD::draw(drawAPi, viewProjection);
     if (tripletsVexes.empty()) {
-        Polyline::draw(drawAPi, viewProjection);
-    } else {
-        drawSelPlesel(drawAPi, viewProjection);
+        drawAPi.addShapes<Line>({{{color, vertexes[0]}, {color, vertexes[1]}}});
     }
 
     for (const auto& tripVex : tripletsVexes) {
@@ -43,9 +42,8 @@ void Mesh::draw(DrawAPI& drawAPi, Matrix4x4 viewProjection) const {
 }
 
 Mesh::Mesh(const Vector4& vertex, const Color& color)
-    : Polyline(vertex, color)
+    : SAD(vertex, color)
 {
-    setDrawLines(true);
 }
 
 Mesh::Mesh() {}
@@ -53,7 +51,7 @@ Mesh::Mesh() {}
 void Mesh::addVertex(const Vector4& pos) {
     auto mins = get2Mins(pos);
 
-    vertexes.push_back(pos);
+    SAD::addVertex(pos);
     currentSelection = vertexes.size() - 1;
 
     const auto& vertexes = getVertexes();

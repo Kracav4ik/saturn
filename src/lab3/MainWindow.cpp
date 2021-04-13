@@ -1,12 +1,13 @@
 #include "MainWindow.h"
 
 #include "OpenLL/Fragment.h"
+#include "OpenLL/BezierSurface.h"
 #include "Mesh.h"
 
 #include <QWheelEvent>
 
 MainWindow::MainWindow()
-    : model(std::make_shared<Model>())
+    : model(std::make_shared<Model>(this))
 {
     setupUi(this);
 
@@ -42,13 +43,13 @@ MainWindow::MainWindow()
         }
     });
 
-    connect(drawLines, &QCheckBox::clicked, [this](bool isDraw) {
-        model->setDrawLines(isDraw);
-    });
-
-    connect(isFilled, &QCheckBox::clicked, [this](bool isDraw) {
-        model->setDrawTriangles(isDraw);
-    });
+//    connect(drawLines, &QCheckBox::clicked, [this](bool isDraw) {
+//        model->setDrawLines(isDraw);
+//    });
+//
+//    connect(isFilled, &QCheckBox::clicked, [this](bool isDraw) {
+//        model->setDrawTriangles(isDraw);
+//    });
 
     connect(model.get(), &Model::click, updateXYZ);
 
@@ -68,27 +69,93 @@ MainWindow::MainWindow()
         setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
     });
 
-    auto initFunc = [](ll::DrawAPI& drawAPi, float angle) {
-        drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
-            return vert.color;
-        });
+    auto initFunc = [](ll::DrawAPI& drawAPi) {
+        static QImage img;
+        img.load(":/UV_Grid.jpg");
+        drawAPi.loadTexture(reinterpret_cast<const uint32_t*>(img.constBits()), img.width(), img.height());
     };
 
-    auto drawFunc = [](ll::DrawAPI& drawAPi, float angle){
+    auto drawFunc = [&](ll::DrawAPI& drawAPi, float angle){
         ll::Vertex v000{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};
         ll::Vertex v001{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 3)};
         ll::Vertex v010{ll::Color(0, 1, 0), ll::Vector4::position(0, 3, 0)};
         ll::Vertex v100{ll::Color(1, 0, 0), ll::Vector4::position(3, 0, 0)};
-        drawAPi.addLines(std::vector<ll::Line> {
-                ll::Line{ v000, v001 },
-                ll::Line{ v000, v010 },
-                ll::Line{ v000, v100 },
+        drawAPi.addShapes<ll::Line>( {
+                { v000, v001 },
+                { v000, v010 },
+                { v000, v100 },
+        });
+
+        if (model->getSelVexes().empty()) return;
+
+        ll::Color linesColor(0, 0, 1);
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                drawAPi.addShapes<ll::Line>({
+                    {{linesColor, model->getSelVexes()[i * 4 + j]}, {linesColor, model->getSelVexes()[i * 4 + j + 1]}},
+                    {{linesColor, model->getSelVexes()[i * 4 + j]}, {linesColor, model->getSelVexes()[(i + 1) * 4 + j]}},
+                });
+            }
+        }
+
+        drawAPi.addShapes<ll::Line>({
+                {{linesColor, model->getSelVexes()[15]}, {linesColor, model->getSelVexes()[14]}},
+                {{linesColor, model->getSelVexes()[15]}, {linesColor, model->getSelVexes()[11]}},
+                {{linesColor, model->getSelVexes()[14]}, {linesColor, model->getSelVexes()[13]}},
+                {{linesColor, model->getSelVexes()[11]}, {linesColor, model->getSelVexes()[7]}},
+                {{linesColor, model->getSelVexes()[13]}, {linesColor, model->getSelVexes()[12]}},
+                {{linesColor, model->getSelVexes()[7]}, {linesColor, model->getSelVexes()[3]}},
+        });
+
+
+        const ll::Color& color = ll::Color::DISCARD;
+        drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
+            return sampler->getColor(vert.uv);
+        });
+
+        drawAPi.addShapes<ll::BezierSurface>({
+                ll::BezierSurface {
+                    {
+                    {
+                        {color, model->getSelVexes()[0], {0, 0}},
+                        {color, model->getSelVexes()[1], {0.33, 0}},
+                        {color, model->getSelVexes()[2], {0.66, 0}},
+                        {color, model->getSelVexes()[3], {1, 0}},
+                    },
+                    {
+                        {color, model->getSelVexes()[4], {0, 0.33}},
+                        {color, model->getSelVexes()[5], {0.33, 0.33}},
+                        {color, model->getSelVexes()[6], {0.66, 0.33}},
+                        {color, model->getSelVexes()[7], {1, 0.33}},
+                    },
+                    {
+                        {color, model->getSelVexes()[8], {0, 0.66}},
+                        {color, model->getSelVexes()[9], {0.33, 0.66}},
+                        {color, model->getSelVexes()[10], {0.66, 0.66}},
+                        {color, model->getSelVexes()[11], {1, 0.66}},
+                    },
+                    {
+                        {color, model->getSelVexes()[12], {0, 1}},
+                        {color, model->getSelVexes()[13], {0.33, 1}},
+                        {color, model->getSelVexes()[14], {0.66, 1}},
+                        {color, model->getSelVexes()[15], {1, 1}},
+                    },
+                    }
+                }
+        });
+    };
+
+    auto baseShader = [](ll::DrawAPI& drawAPi) {
+        drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
+            return vert.color;
         });
     };
 
     for (const auto& drawArea : {drawArea1, drawArea2, drawArea3, drawArea4}) {
         drawArea->setIniter(initFunc);
         drawArea->setDrawer(drawFunc);
+        drawArea->setBaseShader(baseShader);
     }
 
     connect(&timer, &QTimer::timeout, [this]() {
@@ -138,6 +205,6 @@ void MainWindow::drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLe
     for (const auto& triangles : {getTrianglesFromRect(v010, v110, v000, v100), getTrianglesFromRect(v000, v100, v001, v101),
                                   getTrianglesFromRect(v000, v001, v010, v011), getTrianglesFromRect(v011, v111, v010, v110),
                                   getTrianglesFromRect(v001, v101, v011, v111), getTrianglesFromRect(v110, v111, v100, v101)}) {
-        drawAPi.addTriangles(triangles);
+        drawAPi.addShapes(triangles);
     }
 }

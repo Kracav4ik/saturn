@@ -13,13 +13,13 @@ void Model::draw(ll::DrawAPI& drawApi, ll::Matrix4x4 viewProjection) {
         );
 
         if (lastSel != NO_SELECTION && polylines[lastSel]->onBorder()) {
-            drawApi.addLines({ll::Line({mouseColor, polylines[lastSel]->getSelVertex()}, mouseVert)});
+            drawApi.addShapes<ll::Line>({ll::Line({mouseColor, polylines[lastSel]->getSelVertex()}, mouseVert)});
         }
     }
 
     for (const auto& polyline : polylines) {
         polyline->draw(drawApi, viewProjection);
-        drawApi.addParabolicCurves({ll::ParabolicCurve(polyline->getVertexes())});
+        drawApi.addShapes<ll::ParabolicCurve>({ll::ParabolicCurve(polyline->getVertexes())});
     }
 }
 

@@ -20,8 +20,6 @@ void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix
 
     drawAPi.clear(fb, ll::Color(0.7, 0.7, 0.7));
 
-    init(drawAPi, angle);
-
     viewProjection = ll::Matrix4x4::toScreenSpace(fb.getW(), fb.getH())
                      * projection
                      * lookAt
@@ -50,8 +48,8 @@ ll::Matrix4x4 Frame::getViewProjection() const {
     return viewProjection;
 }
 
-void Frame::setIniter(DrawFunc initFunc) {
-    init = std::move(initFunc);
+void Frame::setIniter(InitFunc initFunc) {
+    initFunc(drawAPi);
 }
 
 void Frame::setDrawer(DrawFunc drawFunc) {

@@ -12,9 +12,13 @@ set(EXE_SOURCES
         Model.h
         Polyline.cpp
         Polyline.h
+        SelectedAndDraggable.cpp
+        SelectedAndDraggable.h
 )
 
-add_executable(${EXE_NAME} ${EXE_SOURCES})
+qt5_add_resources(EXE_RESOURCES main.qrc)
+
+add_executable(${EXE_NAME} ${EXE_SOURCES} ${EXE_RESOURCES})
 
 target_link_libraries(${EXE_NAME} ${QT_LIBS} open_ll)
 

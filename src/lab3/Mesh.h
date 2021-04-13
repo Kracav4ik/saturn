@@ -3,7 +3,7 @@
 #include "OpenLL/Vector4.h"
 #include "OpenLL/Matrix4x4.h"
 #include "OpenLL/Color.h"
-#include "Polyline.h"
+#include "SelectedAndDraggable.h"
 
 #include <vector>
 #include <QObject>
@@ -16,8 +16,7 @@ class Vector4;
 
 struct TripletsVector4;
 
-class Mesh : public Polyline {
-Q_OBJECT
+class Mesh : public SAD {
 public:
     Mesh(const ll::Vector4& vertex, const ll::Color& color);
     Mesh();

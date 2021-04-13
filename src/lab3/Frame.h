@@ -7,6 +7,7 @@
 #include <QGraphicsView>
 
 using DrawFunc = std::function<void(ll::DrawAPI& drawAPi, float angle)>;
+using InitFunc = std::function<void(ll::DrawAPI& drawAPi)>;
 
 class Frame : public QGraphicsView {
 Q_OBJECT
@@ -16,7 +17,8 @@ public:
 
     void drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix4x4 frameRot, float angle);
     ll::Matrix4x4 getViewProjection() const;
-    void setIniter(DrawFunc initFunc);
+    void setBaseShader(InitFunc newBaseShader);
+    void setIniter(InitFunc initFunc);
     void setDrawer(DrawFunc drawFunc);
     void reset();
 
@@ -40,7 +42,7 @@ private:
     QPoint currRot;
     ll::Matrix4x4 viewProjection;
     std::shared_ptr<Model> model;
-    DrawFunc init;
+    InitFunc baseShader;
     DrawFunc draw;
     ll::DrawAPI drawAPi;
     ll::Framebuffer fb;

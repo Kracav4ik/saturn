@@ -104,6 +104,6 @@ Scene Scene::parseObj(const std::string& contents) {
 
 void Scene::draw(DrawAPI& drawApi) {
     for (const auto& object : objects) {
-        drawApi.addTriangles(object.triangles);
+        drawApi.addShapes(object.triangles);
     }
 }

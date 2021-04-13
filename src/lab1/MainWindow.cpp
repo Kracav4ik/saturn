@@ -74,41 +74,41 @@ MainWindow::MainWindow()
                 };
             };
 
-            drawAPi.addTriangles(getTrianglesFromRect(
-                v010.withUV(ll::Vector2{0, 0}),
-                v110.withUV(ll::Vector2{1, 0}),
-                v000.withUV(ll::Vector2{0, 1}),
-                v100.withUV(ll::Vector2{1, 1})
+            drawAPi.addShapes(getTrianglesFromRect(
+                v010.withUV({0, 0}),
+                v110.withUV({1, 0}),
+                v000.withUV({0, 1}),
+                v100.withUV({1, 1})
             ));
-            drawAPi.addTriangles(getTrianglesFromRect(
-                v000.withUV(ll::Vector2{0, 0}),
-                v100.withUV(ll::Vector2{1, 0}),
-                v001.withUV(ll::Vector2{0, 1}),
-                v101.withUV(ll::Vector2{1, 1})
+            drawAPi.addShapes(getTrianglesFromRect(
+                v000.withUV({0, 0}),
+                v100.withUV({1, 0}),
+                v001.withUV({0, 1}),
+                v101.withUV({1, 1})
             ));
-            drawAPi.addTriangles(getTrianglesFromRect(
-                v000.withUV(ll::Vector2{0, 0}),
-                v001.withUV(ll::Vector2{1, 0}),
-                v010.withUV(ll::Vector2{0, 1}),
-                v011.withUV(ll::Vector2{1, 1})
+            drawAPi.addShapes(getTrianglesFromRect(
+                v000.withUV({0, 0}),
+                v001.withUV({1, 0}),
+                v010.withUV({0, 1}),
+                v011.withUV({1, 1})
             ));
-            drawAPi.addTriangles(getTrianglesFromRect(
-                v011.withUV(ll::Vector2{0, 0}),
-                v111.withUV(ll::Vector2{1, 0}),
-                v010.withUV(ll::Vector2{0, 1}),
-                v110.withUV(ll::Vector2{1, 1})
+            drawAPi.addShapes(getTrianglesFromRect(
+                v011.withUV({0, 0}),
+                v111.withUV({1, 0}),
+                v010.withUV({0, 1}),
+                v110.withUV({1, 1})
             ));
-            drawAPi.addTriangles(getTrianglesFromRect(
-                v001.withUV(ll::Vector2{0, 0}),
-                v101.withUV(ll::Vector2{1, 0}),
-                v011.withUV(ll::Vector2{0, 1}),
-                v111.withUV(ll::Vector2{1, 1})
+            drawAPi.addShapes(getTrianglesFromRect(
+                v001.withUV({0, 0}),
+                v101.withUV({1, 0}),
+                v011.withUV({0, 1}),
+                v111.withUV({1, 1})
             ));
-            drawAPi.addTriangles(getTrianglesFromRect(
-                v110.withUV(ll::Vector2{0, 0}),
-                v111.withUV(ll::Vector2{1, 0}),
-                v100.withUV(ll::Vector2{0, 1}),
-                v101.withUV(ll::Vector2{1, 1})
+            drawAPi.addShapes(getTrianglesFromRect(
+                v110.withUV({0, 0}),
+                v111.withUV({1, 0}),
+                v100.withUV({0, 1}),
+                v101.withUV({1, 1})
             ));
         }
         float width = 0.1;
@@ -195,10 +195,10 @@ void MainWindow::drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLe
         };
     };
 
-    drawAPi.addTriangles(getTrianglesFromRect(v010, v110, v000, v100));
-    drawAPi.addTriangles(getTrianglesFromRect(v000, v100, v001, v101));
-    drawAPi.addTriangles(getTrianglesFromRect(v000, v001, v010, v011));
-    drawAPi.addTriangles(getTrianglesFromRect(v011, v111, v010, v110));
-    drawAPi.addTriangles(getTrianglesFromRect(v001, v101, v011, v111));
-    drawAPi.addTriangles(getTrianglesFromRect(v110, v111, v100, v101));
+    drawAPi.addShapes(getTrianglesFromRect(v010, v110, v000, v100));
+    drawAPi.addShapes(getTrianglesFromRect(v000, v100, v001, v101));
+    drawAPi.addShapes(getTrianglesFromRect(v000, v001, v010, v011));
+    drawAPi.addShapes(getTrianglesFromRect(v011, v111, v010, v110));
+    drawAPi.addShapes(getTrianglesFromRect(v001, v101, v011, v111));
+    drawAPi.addShapes(getTrianglesFromRect(v110, v111, v100, v101));
 }

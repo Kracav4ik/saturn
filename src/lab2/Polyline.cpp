@@ -84,7 +84,7 @@ void Polyline::draw(DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const {
         lines.emplace_back(from, to);
     }
     if (drawLines) {
-        drawAPi.addLines(lines);
+        drawAPi.addShapes(lines);
     }
     {
         auto wrapper = drawAPi.saveTransform();

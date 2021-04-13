@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>UV_Grid.jpg</file>
+    </qresource>
+</RCC>

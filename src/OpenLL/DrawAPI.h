@@ -5,8 +5,8 @@
 #include "Sampler.h"
 #include "Shader.h"
 #include "Line.h"
-#include "ParabolicCurve.h"
 
+#include <type_traits>
 #include <vector>
 #include <stack>
 #include <memory>
@@ -14,6 +14,8 @@
 namespace ll {
 
 class Framebuffer;
+struct ParabolicCurve;
+struct BezierSurface;
 
 enum class CullMode {
     DrawCW,
@@ -23,7 +25,16 @@ enum class CullMode {
 
 struct DrawCall {
     template<typename T>
-    DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform, CullMode cull);
+    DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform, CullMode cull)
+        : shader(std::move(shader))
+        , transform(std::move(transform))
+        , cull(cull)
+    {
+        objects.reserve(vec.size());
+        for (const auto& item : vec) {
+            objects.template emplace_back(new T(item));
+        }
+    }
 
     DrawCall();
 
@@ -66,11 +77,16 @@ public:
 
     void clear(Framebuffer& fb, const Color& color) const;
 
-    void addLines(const std::vector<Line>& lines);
-    void addParabolicCurves(const std::vector<ParabolicCurve>& curves);
+    template<
+        typename T,
+        typename = std::enable_if_t<std::is_base_of_v<Shape, T>>
+    >
+    void addShapes(const std::vector<T>& shapes) {
+        drawCalls.emplace_back(shapes, fragmentShader, getMatrix(), cull);
+    }
     void drawRound(const Vertex& center, float radius, bool isSolid);
     void drawLinesCube(const Vector4& center, float size, Color color);
-    void addTriangles(const std::vector<Triangle>& triangles);
+    void drawSphere(const Vertex& center, float radius);
 
     void drawFrame(Framebuffer& fb) const;
 
