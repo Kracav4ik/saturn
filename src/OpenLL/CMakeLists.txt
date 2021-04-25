@@ -27,3 +27,8 @@ set(LIBRARY_SOURCES
 )
 
 add_library(open_ll ${LIBRARY_SOURCES})
+
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(open_ll PUBLIC OpenMP::OpenMP_CXX)
+endif()
