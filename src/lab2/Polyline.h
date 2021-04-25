@@ -20,6 +20,7 @@ public:
     Polyline();
 
     void addVertex(const ll::Vector4& pos);
+    void removeVertex();
     bool onBorder() const;
 
     void setPos(const ll::Vector4& pos);
@@ -34,6 +35,8 @@ public:
 
     void draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection) const;
 
+    void setDrawSelection(bool drawSelection);
+    void setDrawPreselection(bool drawPresel);
     void setDrawLines(bool drawLines);
 
 public slots:

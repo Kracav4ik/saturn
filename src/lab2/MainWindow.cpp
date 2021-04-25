@@ -63,7 +63,7 @@ MainWindow::MainWindow()
         setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
     });
 
-    auto initFunc = [this](ll::DrawAPI& drawAPi, float angle) {
+    auto initFunc = [](ll::DrawAPI& drawAPi) {
         drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
             return vert.color;
         });
