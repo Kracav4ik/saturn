@@ -50,7 +50,9 @@ void SelectedAndDraggable::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjecti
 }
 
 void SelectedAndDraggable::setPos(const ll::Vector4& pos) {
-    vertexes[currentSelection] = pos;
+    if (0 <= currentSelection && currentSelection < vertexes.size()) {
+        vertexes[currentSelection] = pos;
+    }
 }
 
 int SelectedAndDraggable::getCurrentSelection() const {
