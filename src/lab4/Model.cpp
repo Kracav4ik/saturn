@@ -5,7 +5,7 @@
 
 Model::Model(QObject* parent) : QObject(parent) {
 
-    sads.push_back(std::make_unique<LinesWithClipRect>(ll::Vector4::position(1, 1, 0 ), 0.4, 0.4));
+    sads.push_back(std::make_unique<LinesWithClipRect>(ll::Vector4::position(1, 1, 0), 0.4, 0.4));
     lastSel = 0;
 
     sads.back()->changeColor(ll::Color(0, 1, 0));
@@ -56,15 +56,6 @@ void Model::setSelPoint(const ll::Vector4& vec) {
 }
 
 void Model::setDrawLines(bool isDraw) {
-//    for (const auto& mesh : sads) {
-//        mesh->setDrawLines(isDraw);
-//    }
-}
-
-void Model::setDrawTriangles(bool drawTriangles) {
-//    for (const auto& mesh : sads) {
-//        mesh->setDrawTriangles(drawTriangles);
-//    }
 }
 
 void Model::press(const ll::Vector4& pos, Qt::KeyboardModifiers modifiers, ll::Matrix4x4 viewProjection) {
@@ -110,6 +101,10 @@ void Model::move(const ll::Vector4& pos, Qt::KeyboardModifiers modifiers, ll::Ma
         sads[lastSel]->setPos(newPos.toHomogenous());
     }
 
+    if ((keyMods & Qt::ControlModifier) != 0) {
+        (dynamic_cast<LinesWithClipRect*>(sads.back().get()))->setRectPos(currentMouseWorldPos);
+    }
+
     if ((keyMods & (Qt::ShiftModifier | Qt::ControlModifier)) != 0) {
         return;
     }
@@ -146,6 +141,12 @@ void Model::move(const ll::Vector4& pos, Qt::KeyboardModifiers modifiers, ll::Ma
 
 void Model::release() {
     dragging = false;
+}
+
+void Model::resizeRect(float width, float height) {
+    auto* pRect = dynamic_cast<LinesWithClipRect*>(sads.back().get());
+    pRect->setRectWidth(width);
+    pRect->setRectHeight(height);
 }
 
 void Model::selectSAD(int idx, bool presel) {

@@ -45,6 +45,14 @@ MainWindow::MainWindow()
 //        model->setDrawTriangles(isDraw);
 //    });
 
+    connect(widthSB, &QDoubleSpinBox::textChanged, [this]() {
+        model->resizeRect(widthSB->value(), heightSB->value());
+    });
+
+    connect(heightSB, &QDoubleSpinBox::textChanged, [this]() {
+        model->resizeRect(widthSB->value(), heightSB->value());
+    });
+
     connect(model.get(), &Model::click, updateXYZ);
 
     connect(xSB, &QDoubleSpinBox::textChanged, [this]() {

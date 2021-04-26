@@ -24,7 +24,7 @@ public:
     std::vector<ll::Vector4> getSelVexes() const;
     void setSelPoint(const ll::Vector4& vec);
     void setDrawLines(bool isDraw);
-    void setDrawTriangles(bool drawTriangles);
+    void resizeRect(float width, float height);
 
 public slots:
     void press(const ll::Vector4& pos, Qt::KeyboardModifiers modifiers, ll::Matrix4x4 viewProjection);

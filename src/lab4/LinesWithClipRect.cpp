@@ -3,10 +3,6 @@
 #include "OpenLL/Line.h"
 #include "OpenLL/DrawAPI.h"
 
-#include <iostream>
-
-const int RECT_SELECT = -2;
-
 LinesWithClipRect::LinesWithClipRect(ll::Vector4 rectPos, float rectWidth, float rectHeight)
         : rectPos(rectPos)
         , rectWidth(rectWidth)
@@ -178,10 +174,10 @@ void LinesWithClipRect::setRectPos(const ll::Vector4& newRectPos) {
     rectPos = newRectPos;
 }
 
-void LinesWithClipRect::setRectWidth(int newRectWidth) {
+void LinesWithClipRect::setRectWidth(float newRectWidth) {
     rectWidth = newRectWidth;
 }
 
-void LinesWithClipRect::setRectHeight(int newRectHeight) {
+void LinesWithClipRect::setRectHeight(float newRectHeight) {
     rectHeight = newRectHeight;
 }
