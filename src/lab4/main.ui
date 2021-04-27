@@ -41,39 +41,6 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Zoom</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDoubleSpinBox" name="zoomSB">
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="minimum">
-         <double>0.010000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>10.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.010000000000000</double>
-        </property>
-        <property name="value">
-         <double>3.500000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="reset">
-        <property name="text">
-         <string>Reset</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QGroupBox" name="xyzZone_2">
         <property name="enabled">
          <bool>true</bool>

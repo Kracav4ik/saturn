@@ -33,18 +33,6 @@ MainWindow::MainWindow()
 
     drawArea->setAllowDragging(false);
 
-    connect(reset, &QPushButton::clicked, [this]() {
-        drawArea->reset();
-    });
-
-//    connect(drawLines, &QCheckBox::clicked, [this](bool isDraw) {
-//        model->setDrawLines(isDraw);
-//    });
-//
-//    connect(isFilled, &QCheckBox::clicked, [this](bool isDraw) {
-//        model->setDrawTriangles(isDraw);
-//    });
-
     connect(widthSB, &QDoubleSpinBox::textChanged, [this]() {
         model->resizeRect(widthSB->value(), heightSB->value());
     });
@@ -67,10 +55,6 @@ MainWindow::MainWindow()
         model->setSelPoint(ll::Vector4::position( xSB->value(), ySB->value(), zSB->value()));
     });
 
-    connect(zoomSB, &QDoubleSpinBox::textChanged, [this]() {
-        setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
-    });
-
     auto initFunc = [](ll::DrawAPI& drawAPi) {
     };
 
@@ -91,7 +75,7 @@ MainWindow::MainWindow()
         static float a = 0;
 
         auto lookAt = ll::Matrix4x4::lookAt(
-                ll::Vector4::position(0, 0, zoomSB->value()),
+                ll::Vector4::position(0, 0, 1),
                 ll::Vector4::position(0, 0, 0),
                 ll::Vector4::direction(0, 1, 0)
         );
@@ -106,8 +90,6 @@ MainWindow::MainWindow()
 }
 
 void MainWindow::wheelEvent(QWheelEvent* event) {
-    zoomSB->setValue(zoomSB->value() - event->angleDelta().y() / 1200.f);
-    setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
 }
 
 void MainWindow::drawCenter(ll::DrawAPI& drawAPi, float width, ll::Color colorLeft, ll::Color colorRight) {
