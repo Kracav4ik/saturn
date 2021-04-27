@@ -3,6 +3,95 @@
 #include "OpenLL/Line.h"
 #include "OpenLL/DrawAPI.h"
 
+#include <functional>
+
+namespace {
+struct Rect {
+    ll::Vector4 topLeft;
+    ll::Vector4 bottomRight;
+};
+
+struct Line {
+    ll::Vector4 from;
+    ll::Vector4 to;
+
+    ll::Vector4 diff() {
+        return to - from;
+    }
+};
+
+const ll::Color MAIN_COLOR = ll::Color(0, 0, 1);
+const ll::Color ALTER_COLOR = ll::Color(1, 0, 0);
+
+}
+
+template <auto ll::Vector4::*m>
+bool valueBetween(const ll::Vector4& from, const ll::Vector4& to, const ll::Vector4& val) {
+    return from.*m <= val.*m && val.*m <= to.*m || from.*m >= val.*m && val.*m >= to.*m;
+}
+
+bool pointInRect(const Rect& rect, const ll::Vector4& pos) {
+    return valueBetween<&ll::Vector4::x>(rect.topLeft, rect.bottomRight, pos) && valueBetween<&ll::Vector4::y>(rect.topLeft, rect.bottomRight, pos);
+}
+
+template <auto ll::Vector4::*m, auto ll::Vector4::*n>
+ll::Vector4 getPosFromVal(ll::Vector4 val, Line line) {
+    auto diff = line.diff();
+    if (diff.*m == 0) return ll::Vector4();
+
+    auto a = diff.*n / diff.*m;
+    auto b = line.to.*n - a * line.to.*m;
+    auto valX = val.*m;
+    auto valF = a * valX + b;
+    if (m == &ll::Vector4::x) {
+        return ll::Vector4::position(valX, valF, 0);
+    }
+    return ll::Vector4::position(valF, valX, 0);
+};
+
+template <auto ll::Vector4::*m>
+bool checkInside(bool condition, std::vector<ll::Line>& lines, const Rect& rect, const Line& line, const std::function<ll::Vector4(ll::Vector4, Line)>& getPosFromFunc) {
+    ll::Vector4 borderPos;
+
+    if (condition) {
+        borderPos = getPosFromFunc(rect.bottomRight, line);
+    } else {
+        borderPos = getPosFromFunc(rect.topLeft, line);
+    }
+
+    if (pointInRect(rect, borderPos) && valueBetween<m>(line.from, line.to, borderPos)) {
+        lines.push_back({{ALTER_COLOR, line.from}, {ALTER_COLOR, borderPos}});
+        lines.push_back({{MAIN_COLOR, borderPos}, {MAIN_COLOR, line.to}});
+        return true;
+    }
+    return false;
+}
+
+template <auto ll::Vector4::*m, auto ll::Vector4::*n>
+bool checkIntersects(bool condition, std::vector<ll::Line>& lines, const Rect& rect, const Line& line) {
+    if (valueBetween<m>(line.from, line.to, rect.topLeft)) {
+        auto firstBordPos = getPosFromVal<m, n>(rect.topLeft, line);
+        if (pointInRect(rect, firstBordPos)) {
+            ll::Vector4 secBordPos;
+            if (condition) {
+                secBordPos = getPosFromVal<n, m>(rect.topLeft, line);
+            } else {
+                secBordPos = getPosFromVal<n, m>(rect.bottomRight, line);
+            }
+            if (!pointInRect(rect, secBordPos)) {
+                secBordPos = getPosFromVal<m, n>(rect.bottomRight, line);
+            }
+
+            lines.push_back({{MAIN_COLOR, line.from}, {MAIN_COLOR, firstBordPos}});
+            lines.push_back({{ALTER_COLOR, firstBordPos}, {ALTER_COLOR, secBordPos}});
+            lines.push_back({{MAIN_COLOR, secBordPos}, {MAIN_COLOR, line.to}});
+            return true;
+        }
+    }
+
+    return false;
+}
+
 LinesWithClipRect::LinesWithClipRect(ll::Vector4 rectPos, float rectWidth, float rectHeight)
         : rectPos(rectPos)
         , rectWidth(rectWidth)
@@ -20,32 +109,17 @@ void LinesWithClipRect::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection)
     auto tl = rectPos + ll::Vector4::direction(-rectWidth, rectHeight, 0);
     auto tr = rectPos + ll::Vector4::direction(rectWidth, rectHeight, 0);
 
+    Rect clipRect = {tl, br};
+    Rect backClipRect = {br, tl};
+
     auto alterColor = ll::Color(1, 0, 0);
 
-    auto pointInRect = [&](const ll::Vector4& pos) {
-        return tl.x <= pos.x && pos.x <= br.x && br.y <= pos.y && pos.y <= tl.y;
-    };
-    
     for (int i = 1; i < vertexes.size(); i += 2) {
         auto from = vertexes[i - 1];
         auto to = vertexes[i];
-        auto toInRect = pointInRect(to);
-        auto fromInRect = pointInRect(from);
-
-        auto diff = to - from;
-        auto getPosFromX = [&](float x) {
-            if (diff.x == 0) return ll::Vector4();
-            auto a = diff.y / diff.x;
-            auto b = to.y - a * to.x;
-            return ll::Vector4::position(x, a * x + b, 0);
-        };
-
-        auto getPosFromY = [&](float y) {
-            if (diff.y == 0) return ll::Vector4();
-            auto a = diff.x / diff.y;
-            auto b = to.x - a * to.y;
-            return ll::Vector4::position(a * y + b, y, 0);
-        };
+        Line line = {from, to};
+        auto toInRect = pointInRect(clipRect, to);
+        auto fromInRect = pointInRect(clipRect, from);
 
         if (fromInRect && toInRect) {
             lines.push_back({{alterColor, from}, {alterColor, to}});
@@ -54,32 +128,14 @@ void LinesWithClipRect::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection)
         if (fromInRect || toInRect) {
             if (toInRect) {
                 std::swap(to, from);
-                diff = to - from;
+                line = {from, to};
             }
 
-            ll::Vector4 borderPos;
-
-            if (diff.x > 0) {
-                borderPos = getPosFromX(br.x);
-            } else {
-                borderPos = getPosFromX(tl.x);
-            }
-
-            if (pointInRect(borderPos) && (from.x <= borderPos.x && borderPos.x <= to.x || from.x >= borderPos.x && borderPos.x >= to.x)) {
-                lines.push_back({{alterColor, from}, {alterColor, borderPos}});
-                lines.push_back({{color, borderPos}, {color, to}});
+            if (checkInside<&ll::Vector4::x>(line.diff().x > 0, lines, clipRect, line, getPosFromVal<&ll::Vector4::x, &ll::Vector4::y>)) {
                 continue;
             }
 
-            if (diff.y > 0) {
-                borderPos = getPosFromY(tl.y);
-            } else {
-                borderPos = getPosFromY(br.y);
-            }
-
-            if (pointInRect(borderPos) && (from.y <= borderPos.y && borderPos.y <= to.y || from.y >= borderPos.y && borderPos.y >= to.y)) {
-                lines.push_back({{alterColor, from}, {alterColor, borderPos}});
-                lines.push_back({{color, borderPos}, {color, to}});
+            if (checkInside<&ll::Vector4::y>(line.diff().y < 0, lines, clipRect, line, getPosFromVal<&ll::Vector4::y, &ll::Vector4::x>)) {
                 continue;
             }
         }
@@ -87,75 +143,26 @@ void LinesWithClipRect::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection)
         {
             if (from.x > to.x) {
                 std::swap(from, to);
-                diff = to - from;
+                line = {from, to};
             }
 
-            if (from.x <= tl.x && tl.x <= to.x) {
-                auto firstBordPos = getPosFromX(tl.x);
-                ll::Vector4 secBordPos;
-                if (pointInRect(firstBordPos)) {
-                    if (diff.y > 0) {
-                        secBordPos = getPosFromY(tl.y);
-                    } else {
-                        secBordPos = getPosFromY(br.y);
-                    }
-                    if (!pointInRect(secBordPos)) {
-                        secBordPos = getPosFromX(br.x);
-                    }
-
-                    lines.push_back({{color, from}, {color, firstBordPos}});
-                    lines.push_back({{alterColor, firstBordPos}, {alterColor, secBordPos}});
-                    lines.push_back({{color, secBordPos}, {color, to}});
-                    continue;
-                }
+            if (checkIntersects<&ll::Vector4::x, &ll::Vector4::y>(line.diff().y > 0, lines, clipRect, line)) {
+                continue;
             }
 
-            if (from.x <= br.x && br.x <= to.x) {
-                auto firstBordPos = getPosFromX(br.x);
-                ll::Vector4 secBordPos;
-                if (pointInRect(firstBordPos)) {
-                    if (diff.y < 0) {
-                        secBordPos = getPosFromY(tl.y);
-                    } else {
-                        secBordPos = getPosFromY(br.y);
-                    }
-                    if (!pointInRect(secBordPos)) {
-                        secBordPos = getPosFromX(tl.x);
-                    }
-
-                    lines.push_back({{color, from}, {color, secBordPos}});
-                    lines.push_back({{alterColor, secBordPos}, {alterColor, firstBordPos}});
-                    lines.push_back({{color, firstBordPos}, {color, to}});
-                    continue;
-                }
+            if (checkIntersects<&ll::Vector4::x, &ll::Vector4::y>(line.diff().y > 0, lines, backClipRect, {to, from})) {
+                continue;
             }
         }
 
         {
             if (from.y > to.y) {
                 std::swap(from, to);
-                diff = to - from;
+                line = {from, to};
             }
 
-            if (from.y <= tl.y && tl.y <= to.y) {
-                auto firstBordPos = getPosFromY(br.y);
-                ll::Vector4 secBordPos;
-                if (pointInRect(firstBordPos)) {
-                    if (diff.x > 0) {
-                        secBordPos = getPosFromX(br.x);
-                    } else {
-                        secBordPos = getPosFromX(tl.x);
-                    }
-                    if (!pointInRect(secBordPos)) {
-                        secBordPos = getPosFromY(tl.y);
-                    }
-
-
-                    lines.push_back({{color, from}, {color, firstBordPos}});
-                    lines.push_back({{alterColor, firstBordPos}, {alterColor, secBordPos}});
-                    lines.push_back({{color, secBordPos}, {color, to}});
-                    continue;
-                }
+            if (checkIntersects<&ll::Vector4::y, &ll::Vector4::x>(line.diff().x < 0, lines, backClipRect, line)) {
+                continue;
             }
         }
 
