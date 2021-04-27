@@ -112,8 +112,6 @@ void LinesWithClipRect::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection)
     Rect clipRect = {tl, br};
     Rect backClipRect = {br, tl};
 
-    auto alterColor = ll::Color(1, 0, 0);
-
     for (int i = 1; i < vertexes.size(); i += 2) {
         auto from = vertexes[i - 1];
         auto to = vertexes[i];
@@ -122,7 +120,7 @@ void LinesWithClipRect::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection)
         auto fromInRect = pointInRect(clipRect, from);
 
         if (fromInRect && toInRect) {
-            lines.push_back({{alterColor, from}, {alterColor, to}});
+            lines.push_back({{ALTER_COLOR, from}, {ALTER_COLOR, to}});
             continue;
         }
         if (fromInRect || toInRect) {
@@ -166,7 +164,7 @@ void LinesWithClipRect::draw(ll::DrawAPI& drawAPi, ll::Matrix4x4 viewProjection)
             }
         }
 
-        lines.push_back({{color, from}, {color, to}});
+        lines.push_back({{MAIN_COLOR, from}, {MAIN_COLOR, to}});
     }
 
     lines.push_back({{color, tr}, {color, tl}});
