@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>low-poly-mill.obj</file>
+    </qresource>
+</RCC>

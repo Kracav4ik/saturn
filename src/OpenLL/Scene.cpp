@@ -64,7 +64,8 @@ Scene Scene::parseObj(const std::string& contents) {
         }},
         {"v", [&](const std::string& toParse) {
             auto coords = split(toParse, " ");
-            vertexes.push_back({std::stof(coords[0]), std::stof(coords[1]), std::stof(coords[2]), 1});
+            float scale = 0.01;
+            vertexes.push_back({std::stof(coords[0]) * scale, std::stof(coords[1]) * scale, std::stof(coords[2]) * scale, 1});
         }},
         {"vt", [&](const std::string& toParse) {
             auto coords = split(toParse, " ");
