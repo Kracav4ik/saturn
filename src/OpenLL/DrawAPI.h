@@ -72,7 +72,6 @@ class DrawAPI {
 public:
     void setFragmentShader(Shader shader);
     void setCullMode(CullMode cullMode);
-    void setLightFb(std::shared_ptr<Framebuffer> fb);
 
     void reset();
 

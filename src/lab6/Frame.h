@@ -21,6 +21,7 @@ public:
     void setDrawer(DrawFunc drawFunc);
     void setIsLight(bool light);
     void reset();
+    const ll::Framebuffer& getFb();
 
     void setAllowDragging(bool allowDragging);
 

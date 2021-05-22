@@ -17,10 +17,6 @@ void DrawAPI::setCullMode(CullMode cullMode) {
     cull = cullMode;
 }
 
-void DrawAPI::setLightFb(std::shared_ptr<Framebuffer> fb) {
-    lightFB = std::move(fb);
-}
-
 void DrawAPI::reset() {
     drawCalls.clear();
     loadIdentity();
@@ -132,11 +128,7 @@ void DrawAPI::drawFrame(Framebuffer& fb) const {
     for (const auto& drawCall : drawCalls) {
         for (const auto& object : drawCall.objects) {
             for (const auto& frag : object->getFragments(fb, drawCall.transform, drawCall.cull)) {
-//                auto fbToShader = fb;
-//                if (lightFB) {
-//                    fbToShader = *lightFB;
-//                }
-                fb.putPixel(frag.x, frag.y, frag.z, drawCall.shader(frag, sampler.get(), nullptr));
+                fb.putPixel(frag.x, frag.y, frag.z, drawCall.shader(frag, sampler.get()));
             }
         }
     }

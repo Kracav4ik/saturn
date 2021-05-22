@@ -19,8 +19,7 @@ MainWindow::MainWindow()
     timer.setInterval(100);
     timer.start();
 
-    auto lightMat = ll::Matrix4x4::identity();
-
+    static auto lightMat = ll::Matrix4x4::identity();
 
     drawArea1->setModel(model);
     drawArea2->setModel(model);
@@ -39,10 +38,7 @@ MainWindow::MainWindow()
     });
 
     auto initFunc = [&](ll::DrawAPI& drawAPi, bool isLight) {
-        if (isLight) {
-            lightMat = drawAPi.getMatrix();
-        }
-        drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler, std::shared_ptr<ll::Framebuffer> lightFb) {
+        drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
             if (!zBuffer->isChecked()) {
                 return vert.color;
             }
@@ -57,30 +53,40 @@ MainWindow::MainWindow()
 
     auto drawFunc = [&](ll::DrawAPI& drawAPi, bool isLight, float angle){
         if (isLight) {
-            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler, std::shared_ptr<ll::Framebuffer> lightFb) {
-                float d = ((-vert.z) - 0.77f) * 1.7f;
-                if (d < 0.5) {
-                    return 2 * d * ll::Color(1, 1, 1) + (1 - 2 * d) * ll::Color(0.5, 0.5, 0.5);
+            lightMat = drawAPi.getMatrix();
+            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
+                float d = (vert.z + 5.1f) / 4.5f;
+                if (d <= 0 || d >= 1) {
+                    qDebug() << "d out of range" << d << "for z" << vert.z;
                 }
-                d -= 0.5;
-                return 2 * d * ll::Color(0.5, 0.5, 0.5) + (1 - 2 * d) * ll::Color(0, 0, 0);
+                return ll::Color(1 - d, 1 - d, 1 - d);
             });
         } else {
-            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler, const std::shared_ptr<ll::Framebuffer>& lightFb) {
-//                auto lightFrag = drawAPi.getMatrix().inverse() * lightMat * ll::Vector4::position(vert.x, vert.y, vert.z);
-//                if (lightFb.getZ(lightFrag.x, lightFrag.y) - lightFrag.z < 0.5) {
-//                    return vert.color;
-//                }
-                return ll::Color(0, 0, 0);
+            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
+                return ll::Color(1, 1, 1);
             });
 
             {
                 auto wrapper = drawAPi.saveTransform();
-                drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 2, 0));
-                drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI * angle * 0.3));
+                drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 1.5, 0));
+                drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI * angle * 0.1));
                 drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, 1));
-                drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.25, ll::Color(1, 1, 1));
+                drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.1, ll::Color(1, 1, 1));
             }
+
+            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
+                auto lightFrag = (lightMat * drawAPi.getMatrix().inverse() * ll::Vector4::position(vert.x, vert.y, vert.z)).toHomogenous();
+                int xx = lightFrag.x;
+                int yy = lightFrag.y;
+                if (0 > xx || xx >= drawArea2->getFb().getW() || 0 > yy || yy >= drawArea2->getFb().getH()) {
+                    return ll::Color(1, 0, 0);
+                }
+
+                if (std::abs(drawArea2->getFb().getZ(xx, yy) - lightFrag.z) < 0.01) {
+                    return vert.color;
+                }
+                return ll::Color(0, 0, 0);
+            });
         }
 
         {
@@ -89,7 +95,7 @@ MainWindow::MainWindow()
             scene.draw(drawAPi);
         }
 
-        {
+        if (!isLight) {
             ll::Vertex v000{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};
             ll::Vertex v001{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 1.5)};
             ll::Vertex v010{ll::Color(0, 1, 0), ll::Vector4::position(0, 1.5, 0)};
@@ -119,16 +125,16 @@ MainWindow::MainWindow()
         auto perspective =  ll::Matrix4x4::perspective(M_PI / 2 * (- std::pow(1.3, zoomSB->value())), 320.f / 240.f, 3, -4);
         auto ortho =  ll::Matrix4x4::ortho(2.5 * 320.f / 240.f, 2.5, -0.5 * 320.f / 240.f, -0.5, 3, -3);
 
-        drawArea1->drawFrame(perspective, lookAt, ll::Matrix4x4::rotX(M_PI_4) * ll::Matrix4x4::rotY(-M_PI_4), a);
-
         auto sunLookAt = ll::Matrix4x4::lookAt(
-            ll::Vector4::position(0, 2, 1),
+            ll::Vector4::position(0, 1.5, 1),
             ll::Vector4::position(0, 0, 0),
             ll::Vector4::direction(0, 1, 0)
-    );
-        auto sunPerspective =  ll::Matrix4x4::perspective(M_PI / 2 * (- std::pow(1.3, 3.6f)), 320.f / 240.f, 3, -4);
+        );
 
-        drawArea2->drawFrame(sunPerspective, sunLookAt, ll::Matrix4x4::translation(0, 2, 0) * ll::Matrix4x4::rotY(-M_PI * a * 0.3) * ll::Matrix4x4::translation(0, -2, 0), a);
+        auto sunPerspective = ll::Matrix4x4::perspective(M_PI / 2, 1, 3, -4);
+
+        drawArea2->drawFrame(sunPerspective, sunLookAt, ll::Matrix4x4::translation(0, 1.5, 0) * ll::Matrix4x4::rotY(-M_PI * a * 0.1) * ll::Matrix4x4::translation(0, -1.5, 0), a);
+        drawArea1->drawFrame(perspective, lookAt, ll::Matrix4x4::rotX(M_PI_4) * ll::Matrix4x4::rotY(-M_PI_4), a);
 
         a += 0.1;
     });

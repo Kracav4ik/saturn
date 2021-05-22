@@ -50,9 +50,6 @@ ll::Matrix4x4 Frame::getViewProjection() const {
 }
 
 void Frame::setIniter(InitFunc initFunc) {
-    if (isLight) {
-        drawAPi.setLightFb(std::make_shared<ll::Framebuffer>(fb));
-    }
     init = std::move(initFunc);
 }
 
@@ -66,6 +63,10 @@ void Frame::setIsLight(bool light) {
 
 void Frame::reset() {
     currRot = QPoint();
+}
+
+const ll::Framebuffer& Frame::getFb() {
+    return fb;
 }
 
 void Frame::mousePressEvent(QMouseEvent* event) {
