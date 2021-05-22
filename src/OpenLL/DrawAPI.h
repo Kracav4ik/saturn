@@ -72,6 +72,7 @@ class DrawAPI {
 public:
     void setFragmentShader(Shader shader);
     void setCullMode(CullMode cullMode);
+    void setLightFb(std::shared_ptr<Framebuffer> fb);
 
     void reset();
 
@@ -86,6 +87,7 @@ public:
     }
     void drawRound(const Vertex& center, float radius, bool isSolid);
     void drawLinesCube(const Vector4& center, float size, Color color);
+    void drawCube(const Vector4& center, float size, Color color);
     void drawSphere(const Vertex& center, float radius);
 
     void drawFrame(Framebuffer& fb) const;
@@ -94,19 +96,18 @@ public:
     void pushMatrix(const Matrix4x4& mat);
     void popMatrix();
     void loadTexture(const uint32_t* data, int width, int height);
+    Matrix4x4 getMatrix() const;
 
     TransformWrapper saveTransform();
-
     static std::vector<ll::Vector4> getCubeVexes(const Vector4& center, float size);
 
 private:
-    Matrix4x4 getMatrix() const;
-
     std::unique_ptr<Sampler> sampler;
     Shader fragmentShader;
     CullMode cull = CullMode::DrawBoth;
     std::vector<DrawCall> drawCalls;
     std::stack<Matrix4x4> stack;
+    std::shared_ptr<Framebuffer> lightFB;
 };
 
 }

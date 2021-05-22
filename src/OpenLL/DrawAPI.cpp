@@ -17,6 +17,10 @@ void DrawAPI::setCullMode(CullMode cullMode) {
     cull = cullMode;
 }
 
+void DrawAPI::setLightFb(std::shared_ptr<Framebuffer> fb) {
+    lightFB = std::move(fb);
+}
+
 void DrawAPI::reset() {
     drawCalls.clear();
     loadIdentity();
@@ -70,6 +74,53 @@ void DrawAPI::drawLinesCube(const Vector4& center, float size, Color color) {
     });
 }
 
+void DrawAPI::drawCube(const Vector4& center, float size, Color color) {
+    auto vexes = getCubeVexes(center, size);
+
+    auto getTrianglesFromRect = [&](ll::Vertex lb, ll::Vertex lt, ll::Vertex rt, ll::Vertex rb) {
+        return std::vector<ll::Triangle> {
+                ll::Triangle{ rt, lt, lb },
+                ll::Triangle{ rt, rb, lt },
+        };
+    };
+
+    addShapes(getTrianglesFromRect(
+            {color, vexes[2]},
+            {color, vexes[6]},
+            {color, vexes[0]},
+            {color, vexes[4]}
+    ));
+    addShapes(getTrianglesFromRect(
+            {color, vexes[0]},
+            {color, vexes[4]},
+            {color, vexes[1]},
+            {color, vexes[5]}
+    ));
+    addShapes(getTrianglesFromRect(
+            {color, vexes[0]},
+            {color, vexes[1]},
+            {color, vexes[2]},
+            {color, vexes[3]}
+    ));
+    addShapes(getTrianglesFromRect(
+            {color, vexes[3]},
+            {color, vexes[7]},
+            {color, vexes[2]},
+            {color, vexes[6]}
+    ));
+    addShapes(getTrianglesFromRect(
+            {color, vexes[1]},
+            {color, vexes[5]},
+            {color, vexes[3]},
+            {color, vexes[7]}
+    ));
+    addShapes(getTrianglesFromRect(
+            {color,vexes[6]},
+            {color,vexes[7]},
+            {color,vexes[4]},
+            {color,vexes[5]}
+    ));
+}
 void DrawAPI::drawSphere(const Vertex& center, float radius) {
     for (float i = 0; i < radius; i += radius / 10) {
         drawRound({center.color, center.pos - Vector4::direction(0, 0, radius - i)}, i, true);
@@ -81,7 +132,11 @@ void DrawAPI::drawFrame(Framebuffer& fb) const {
     for (const auto& drawCall : drawCalls) {
         for (const auto& object : drawCall.objects) {
             for (const auto& frag : object->getFragments(fb, drawCall.transform, drawCall.cull)) {
-                fb.putPixel(frag.x, frag.y, frag.z, drawCall.shader(frag, sampler.get()));
+//                auto fbToShader = fb;
+//                if (lightFB) {
+//                    fbToShader = *lightFB;
+//                }
+                fb.putPixel(frag.x, frag.y, frag.z, drawCall.shader(frag, sampler.get(), nullptr));
             }
         }
     }

@@ -14,6 +14,7 @@ public:
 
     int getW() const;
     int getH() const;
+    float getZ(int x, int y) const;
 
     std::vector<uint32_t> getColorsARGB32() const;
 

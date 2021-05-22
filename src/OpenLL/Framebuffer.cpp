@@ -18,6 +18,10 @@ int Framebuffer::getH() const {
     return h;
 }
 
+float Framebuffer::getZ(int x, int y) const {
+    return zOrder[(h - 1 - y) * w + x];
+}
+
 std::vector<uint32_t> Framebuffer::getColorsARGB32() const {
     std::vector<uint32_t> result;
     result.reserve(colors.size());
