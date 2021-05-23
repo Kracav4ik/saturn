@@ -6,7 +6,7 @@
 
 #include <QGraphicsView>
 
-using DrawFunc = std::function<void(ll::DrawAPI& drawAPi, bool isLight, float angle)>;
+using DrawFunc = std::function<void(ll::DrawAPI& drawAPi, float angle)>;
 
 class Frame : public QGraphicsView {
 Q_OBJECT

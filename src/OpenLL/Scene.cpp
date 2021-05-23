@@ -14,6 +14,7 @@ std::vector<std::string> split(const std::string& input, const std::string& rege
 
 Scene Scene::parseObj(const std::string& contents) {
     Scene result;
+    result.transform = Matrix4x4::identity();
     
     std::vector<std::string> lines;
 
@@ -104,7 +105,13 @@ Scene Scene::parseObj(const std::string& contents) {
 }
 
 void Scene::draw(DrawAPI& drawApi) {
+    auto wrapper = drawApi.saveTransform();
+    drawApi.pushMatrix(transform);
     for (const auto& object : objects) {
         drawApi.addShapes(object.triangles);
     }
+}
+
+void Scene::setTransform(const Matrix4x4& t) {
+    transform = t;
 }

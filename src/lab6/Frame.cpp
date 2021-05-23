@@ -30,7 +30,7 @@ void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix
 
     model->draw(drawAPi, viewProjection);
 
-    draw(drawAPi, isLight, angle);
+    draw(drawAPi, angle);
 
     drawAPi.drawFrame(fb);
 

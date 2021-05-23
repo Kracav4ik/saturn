@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Triangle.h"
+#include "Matrix4x4.h"
 
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@ class Scene {
 public:
     static Scene parseObj(const std::string& contents);
     void draw(DrawAPI& drawApi);
+    void setTransform(const Matrix4x4& t);
 
 private:
     struct SceneObject {
@@ -20,6 +22,7 @@ private:
     };
 
     std::vector<SceneObject> objects;
+    Matrix4x4 transform;
 };
 
 }

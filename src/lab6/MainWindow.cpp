@@ -15,6 +15,7 @@ MainWindow::MainWindow()
     f.open(QIODevice::ReadOnly | QIODevice::Text);
 
     static ll::Scene scene = ll::Scene::parseObj(f.readAll().toStdString());
+    scene.setTransform(ll::Matrix4x4::rotY(M_PI_2));
 
     timer.setInterval(100);
     timer.start();
@@ -37,63 +38,56 @@ MainWindow::MainWindow()
         setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
     });
 
-    auto drawFunc = [&](ll::DrawAPI& drawAPi, bool isLight, float angle){
-        if (isLight) {
-            lightMat = drawAPi.getMatrix();
-            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
-                float d = (vert.z + 1) / 2;
-                return ll::Color(1 - d, 1 - d, 1 - d);
-            });
-        } else {
-            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
-                return ll::Color(1, 1, 1);
-            });
-
-            {
-                auto wrapper = drawAPi.saveTransform();
-                drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 1.5, 0));
-                drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI * angle * 0.1));
-                drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, 1));
-                drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.1, ll::Color(1, 1, 1));
+    drawArea1->setDrawer([this](ll::DrawAPI& drawAPi, float angle) {
+        drawAPi.setFragmentShader([&](const ll::Fragment& frag, const ll::Sampler* sampler) {
+            auto lightFrag = (lightMat * drawAPi.getMatrix().inverse() * ll::Vector4::position(frag.x, frag.y, frag.z)).toHomogenous();
+//                auto lightFrag = (lightMat * vert.world).toHomogenous();
+            int xx = lightFrag.x;
+            int yy = lightFrag.y;
+            if (0 > xx || xx >= drawArea2->getFb().getW() || 0 > yy || yy >= drawArea2->getFb().getH()) {
+                return ll::Color(1, 0, 0);
             }
 
-            drawAPi.setFragmentShader([&](const ll::Fragment& vert, const ll::Sampler* sampler) {
-                auto lightFrag = (lightMat * drawAPi.getMatrix().inverse() * ll::Vector4::position(vert.x, vert.y, vert.z)).toHomogenous();
-//                auto lightFrag = (lightMat * vert.world).toHomogenous();
-                int xx = lightFrag.x;
-                int yy = lightFrag.y;
-                if (0 > xx || xx >= drawArea2->getFb().getW() || 0 > yy || yy >= drawArea2->getFb().getH()) {
-                    return ll::Color(1, 0, 0);
-                }
+            if (std::abs(drawArea2->getFb().getZ(xx, yy) - lightFrag.z) < 0.01) {
+                return frag.color;
+            }
+            return ll::Color(0, 0, 0);
+        });
 
-                if (std::abs(drawArea2->getFb().getZ(xx, yy) - lightFrag.z) < 0.01) {
-                    return vert.color;
-                }
-                return ll::Color(0, 0, 0);
-            });
-        }
+        scene.draw(drawAPi);
+
+        drawAPi.setFragmentShader([&](const ll::Fragment& frag, const ll::Sampler* sampler) {
+            return frag.color;
+        });
 
         {
             auto wrapper = drawAPi.saveTransform();
-            drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI_2));
-            scene.draw(drawAPi);
+            drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 1.5, 0));
+            drawAPi.pushMatrix(ll::Matrix4x4::rotY(M_PI * angle * 0.1));
+            drawAPi.pushMatrix(ll::Matrix4x4::translation(0, 0, 1));
+            drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.1, ll::Color(1, 1, 1));
         }
 
-        if (!isLight) {
-            ll::Vertex v000{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};
-            ll::Vertex v001{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 1.5)};
-            ll::Vertex v010{ll::Color(0, 1, 0), ll::Vector4::position(0, 1.5, 0)};
-            ll::Vertex v100{ll::Color(1, 0, 0), ll::Vector4::position(1.5, 0, 0)};
-            drawAPi.addShapes<ll::Line>({
-                    { v000, v001 },
-                    { v000, v010 },
-                    { v000, v100 },
-            });
-        }
-    };
+        ll::Vertex v000{ll::Color(0, 0, 0), ll::Vector4::position(0, 0, 0)};
+        ll::Vertex v001{ll::Color(0, 0, 1), ll::Vector4::position(0, 0, 1.5)};
+        ll::Vertex v010{ll::Color(0, 1, 0), ll::Vector4::position(0, 1.5, 0)};
+        ll::Vertex v100{ll::Color(1, 0, 0), ll::Vector4::position(1.5, 0, 0)};
+        drawAPi.addShapes<ll::Line>({
+            { v000, v001 },
+            { v000, v010 },
+            { v000, v100 },
+        });
+    });
 
-    drawArea1->setDrawer(drawFunc);
-    drawArea2->setDrawer(drawFunc);
+    drawArea2->setDrawer([](ll::DrawAPI& drawAPi, float angle){
+        lightMat = drawAPi.getMatrix();
+        drawAPi.setFragmentShader([](const ll::Fragment& frag, const ll::Sampler* sampler) {
+            float d = (frag.z + 1) / 2;
+            return ll::Color(1 - d, 1 - d, 1 - d);
+        });
+
+        scene.draw(drawAPi);
+    });
 
     connect(&timer, &QTimer::timeout, [this]() {
         static float a = 0;
