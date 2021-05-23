@@ -107,7 +107,7 @@ struct Matrix4x4 {
     }
 
     static Matrix4x4 perspective(float fovY, float aspect, float near, float far) {
-        float f = tanf(fovY/2);
+        float f = 1/tanf(fovY/2);
         return {
                 Vector4{f/aspect, 0, 0, 0},
                 Vector4{0, f, 0, 0},

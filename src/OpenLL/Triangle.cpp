@@ -93,13 +93,14 @@ std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matr
                 w0 /= area;
                 w1 /= area;
                 w2 = 1 - w0 - w1;
+                Vector4 world = w0 * points[0].pos + w1 * points[1].pos + w2 * points[2].pos;
                 Vector4 fragUV = (w0 * uv[0] + w1 * uv[1] + w2 * uv[2]).toHomogenous();
                 Vertex vert{
                         w0 * c[0] + w1 * c[1] + w2 * c[2],
                         w0 * v[0] + w1 * v[1] + w2 * v[2],
                         {fragUV.x, fragUV.y},
                 };
-                frags.push_back({x, y, vert.pos.z, vert.uv, vert.color});
+                frags.push_back({x, y, vert.pos.z, world, vert.uv, vert.color});
             } else {
                 if (fragStarted) {
                     break;

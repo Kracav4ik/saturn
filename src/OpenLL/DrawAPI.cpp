@@ -128,6 +128,9 @@ void DrawAPI::drawFrame(Framebuffer& fb) const {
     for (const auto& drawCall : drawCalls) {
         for (const auto& object : drawCall.objects) {
             for (const auto& frag : object->getFragments(fb, drawCall.transform, drawCall.cull)) {
+                if (frag.z < -1 || frag.z > 1) {
+                    continue;
+                }
                 fb.putPixel(frag.x, frag.y, frag.z, drawCall.shader(frag, sampler.get()));
             }
         }

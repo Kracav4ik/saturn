@@ -30,7 +30,6 @@ void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix
 
     model->draw(drawAPi, viewProjection);
 
-    init(drawAPi, isLight);
     draw(drawAPi, isLight, angle);
 
     drawAPi.drawFrame(fb);
@@ -47,10 +46,6 @@ void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix
 
 ll::Matrix4x4 Frame::getViewProjection() const {
     return viewProjection;
-}
-
-void Frame::setIniter(InitFunc initFunc) {
-    init = std::move(initFunc);
 }
 
 void Frame::setDrawer(DrawFunc drawFunc) {

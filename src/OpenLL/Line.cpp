@@ -46,6 +46,7 @@ std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrix4x4& trans
     }
 
     auto diff = (v[1] - v[0]);
+    auto diffWorld = (points[1].pos - points[0].pos);
 
     float width = std::abs(diff.x);
     float height = std::abs(diff.y);
@@ -55,11 +56,12 @@ std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrix4x4& trans
     for (int i = 0; i <= n ; ++i) {
         float t = static_cast<float>(i)/static_cast<float>(n);
         Vector4 p = v[0] + t * diff;
+        Vector4 world = points[0].pos + t * diffWorld;
 
         Vector4 fragUV = ((1 - t) * uv[0] + t * uv[1]).toHomogenous();
         Color color = (1 - t) * c[0] + t * c[1];
 
-        frags.push_back({static_cast<int>(roundf(p.x)), static_cast<int>(roundf(p.y)), p.z, {fragUV.x, fragUV.y}, color});
+        frags.push_back({static_cast<int>(roundf(p.x)), static_cast<int>(roundf(p.y)), p.z, world, {fragUV.x, fragUV.y}, color});
     }
 
     return frags;

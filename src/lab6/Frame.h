@@ -7,7 +7,6 @@
 #include <QGraphicsView>
 
 using DrawFunc = std::function<void(ll::DrawAPI& drawAPi, bool isLight, float angle)>;
-using InitFunc = std::function<void(ll::DrawAPI& drawAPi, bool isLight)>;
 
 class Frame : public QGraphicsView {
 Q_OBJECT
@@ -17,7 +16,6 @@ public:
 
     void drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix4x4 frameRot, float angle);
     ll::Matrix4x4 getViewProjection() const;
-    void setIniter(InitFunc initFunc);
     void setDrawer(DrawFunc drawFunc);
     void setIsLight(bool light);
     void reset();
@@ -45,7 +43,6 @@ private:
     ll::Matrix4x4 viewProjection;
     std::shared_ptr<Model> model;
     DrawFunc draw;
-    InitFunc init;
     ll::DrawAPI drawAPi;
     ll::Framebuffer fb;
     QGraphicsScene scene;

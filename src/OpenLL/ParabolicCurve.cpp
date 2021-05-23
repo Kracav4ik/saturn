@@ -55,7 +55,7 @@ std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix
                 p_t = (1 - t) * Pt(t, vertexes[i - 1], p2, p3) + t * Pt(t - 1, p2, p3, vertexes[i + 2]);
             }
             auto point = (transform * p_t).toHomogenous();
-            frags.push_back({static_cast<int>(roundf(point.x)), static_cast<int>(roundf(point.y)), point.z, {}, selectedColor});
+            frags.push_back({static_cast<int>(roundf(point.x)), static_cast<int>(roundf(point.y)), point.z, p_t, {}, selectedColor});
         }
         colorIdx++;
     }
