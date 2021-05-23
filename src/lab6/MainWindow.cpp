@@ -20,7 +20,6 @@ MainWindow::MainWindow() {
     timer.setInterval(50);
     timer.start();
 
-    static ll::Camera cam;
     cam.move(0, 2, 5);
 
     static ll::Camera sunCam;
@@ -29,12 +28,12 @@ MainWindow::MainWindow() {
     static float sunRotY;
 
     drawArea2->setAllowDragging(false);
-    connect(drawArea1, &Frame::dragMove, [](int dx, int dy) {
+    connect(drawArea1, &Frame::dragMove, [this](int dx, int dy) {
         cam.rotateX(dy / 1000.f);
         cam.rotateY(dx / 1000.f);
     });
 
-    connect(reset, &QPushButton::clicked, []() {
+    connect(reset, &QPushButton::clicked, [this]() {
         cam.reset();
         cam.move(0, 2, 5);
     });
@@ -71,6 +70,7 @@ MainWindow::MainWindow() {
             drawAPi.pushModelMatrix(ll::Matrix4x4::rotY(sunRotY));
             drawAPi.pushModelMatrix(ll::Matrix4x4::rotX(sunRotX));
             drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.2, ll::Color(1, 1, 1));
+            drawAPi.drawLinesCube(ll::Vector4::position(0, 0, 0), 0.2007, ll::Color(0, 0, 0));
         }
 
         {
@@ -100,6 +100,33 @@ MainWindow::MainWindow() {
     });
 
     connect(&timer, &QTimer::timeout, [this]() {
+        float step = 0.1;
+
+        if(keys[Qt::Key_W]) {
+            cam.move(0, 0, -step);
+        }
+
+        if(keys[Qt::Key_A]) {
+            cam.move(-step, 0, 0);
+        }
+
+        if(keys[Qt::Key_S]) {
+            cam.move(0, 0, step);
+        }
+
+        if(keys[Qt::Key_D]) {
+            cam.move(step, 0, 0);
+        }
+
+        if(keys[Qt::Key_X]) {
+            cam.move(0, step, 0);
+        }
+
+        if(keys[Qt::Key_Z]) {
+            cam.move(0, -step, 0);
+        }
+
+
         static float elapsed = 0;
         using namespace std::chrono;
         auto start = high_resolution_clock::now();
@@ -128,3 +155,12 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
     zoomSB->setValue(zoomSB->value() + event->angleDelta().y() / 1200.f);
     setWindowTitle(QString("Zoom %1").arg(zoomSB->value()));
 }
+
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+    keys[event->nativeVirtualKey()] = true;
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* event) {
+    keys[event->nativeVirtualKey()] = false;
+}
+
