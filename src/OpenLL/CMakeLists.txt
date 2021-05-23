@@ -1,6 +1,8 @@
 set(LIBRARY_SOURCES
         BezierSurface.cpp
         BezierSurface.h
+        Camera.cpp
+        Camera.h
         Color.cpp
         Color.h
         DrawAPI.cpp

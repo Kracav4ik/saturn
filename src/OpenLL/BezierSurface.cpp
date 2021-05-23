@@ -3,6 +3,7 @@
 #include "Fragment.h"
 #include "Vertex.h"
 #include "Matrix4x4.h"
+#include "DrawAPI.h"
 
 #include <omp.h>
 
@@ -59,25 +60,27 @@ BezierSurface::BezierSurface(std::vector<std::vector<Vertex>> vertexes)
         : vertexes(std::move(vertexes)) {
 }
 
-std::vector<Fragment> BezierSurface::getFragments(Framebuffer& fb, const Matrix4x4& transform, CullMode cull) const {
+std::vector<Fragment> BezierSurface::getFragments(Framebuffer& fb, const Matrices& matrices, CullMode cull) const {
     //*
     std::vector<Fragment> frags;
     const int N = 500;
     const float step = 1.0f/N;
     frags.resize((N+1)*(N+1));
 
-#pragma omp parallel for default(none) shared(transform, frags)
+#pragma omp parallel for default(none) shared(matrices, frags)
     for (int uI = 0; uI <= N; ++uI) {
         float u = uI*step;
         for (int vI = 0; vI <= N; ++vI) {
             float v = vI*step;
             auto vertex = getPoint(u, v, vertexes);
-            auto point = (transform * vertex.pos).toHomogenous();
+            auto point = (matrices.fullTransform * vertex.pos).toHomogenous();
+            auto world = (matrices.model * vertex.pos).toHomogenous();
             frags[vI + uI*(N+1)].color = vertex.color;
             frags[vI + uI*(N+1)].uv = vertex.uv;
             frags[vI + uI*(N+1)].x = static_cast<int>(roundf(point.x));
             frags[vI + uI*(N+1)].y = static_cast<int>(roundf(point.y));
             frags[vI + uI*(N+1)].z = point.z;
+            frags[vI + uI*(N+1)].world = world;
         }
     }
 /*/

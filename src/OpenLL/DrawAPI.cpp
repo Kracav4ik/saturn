@@ -1,12 +1,28 @@
 #include "DrawAPI.h"
+#include "Triangle.h"
 #include "Framebuffer.h"
 #include "Fragment.h"
 
 using namespace ll;
 
-DrawCall::DrawCall()
-    : transform(Matrix4x4::zero())
+Matrices::Matrices(const DrawAPI& drawApi)
+    : toScreen(drawApi.getToScreenMatrix())
+    , viewProjection(drawApi.getViewProjectionMatrix())
+    , model(drawApi.getModelMatrix())
+    , fullTransform(toScreen * viewProjection * model)
 {
+}
+
+Matrices::Matrices()
+    : toScreen(Matrix4x4::zero())
+    , viewProjection(Matrix4x4::zero())
+    , model(Matrix4x4::zero())
+    , fullTransform(Matrix4x4::zero())
+{
+}
+
+DrawAPI::DrawAPI() {
+    reset();
 }
 
 void DrawAPI::setFragmentShader(Shader shader) {
@@ -19,7 +35,9 @@ void DrawAPI::setCullMode(CullMode cullMode) {
 
 void DrawAPI::reset() {
     drawCalls.clear();
-    loadIdentity();
+    loadModelIdentity();
+    toScreenMatrix = Matrix4x4::identity();
+    viewProjectionMatrix = Matrix4x4::identity();
 }
 
 void DrawAPI::clear(Framebuffer& fb, const Color& color) const {
@@ -48,7 +66,7 @@ void DrawAPI::drawRound(const Vertex& center, float radius, bool isSolid) {
 
     lines.emplace_back(from, start);
 
-    drawCalls.emplace_back(lines, fragmentShader, getMatrix(), cull);
+    drawCalls.emplace_back(lines, fragmentShader, Matrices(*this), cull);
 }
 
 void DrawAPI::drawLinesCube(const Vector4& center, float size, Color color) {
@@ -127,7 +145,7 @@ void DrawAPI::drawSphere(const Vertex& center, float radius) {
 void DrawAPI::drawFrame(Framebuffer& fb) const {
     for (const auto& drawCall : drawCalls) {
         for (const auto& object : drawCall.objects) {
-            for (const auto& frag : object->getFragments(fb, drawCall.transform, drawCall.cull)) {
+            for (const auto& frag : object->getFragments(fb, drawCall.matrices, drawCall.cull)) {
                 if (frag.z < -1 || frag.z > 1) {
                     continue;
                 }
@@ -137,29 +155,45 @@ void DrawAPI::drawFrame(Framebuffer& fb) const {
     }
 }
 
-void DrawAPI::loadIdentity() {
+void DrawAPI::loadModelIdentity() {
     auto s = std::stack<Matrix4x4>();
-    stack.swap(s);
+    modelStack.swap(s);
 }
 
-void DrawAPI::pushMatrix(const Matrix4x4& mat) {
-    stack.push(getMatrix() * mat);
+void DrawAPI::pushModelMatrix(const Matrix4x4& mat) {
+    modelStack.push(getModelMatrix() * mat);
 }
 
-void DrawAPI::popMatrix() {
-    stack.pop();
+void DrawAPI::popModelMatrix() {
+    modelStack.pop();
+}
+
+Matrix4x4 DrawAPI::getModelMatrix() const {
+    if (modelStack.empty()) {
+        return Matrix4x4::identity();
+    } else {
+        return modelStack.top();
+    }
+}
+
+void DrawAPI::setToScreenMatrix(const Matrix4x4& mat) {
+    toScreenMatrix = mat;
+}
+
+Matrix4x4 DrawAPI::getToScreenMatrix() const {
+    return toScreenMatrix;
+}
+
+void DrawAPI::setViewProjectionMatrix(const Matrix4x4& mat) {
+    viewProjectionMatrix = mat;
+}
+
+Matrix4x4 DrawAPI::getViewProjectionMatrix() const {
+    return viewProjectionMatrix;
 }
 
 void DrawAPI::loadTexture(const uint32_t* data, int width, int height) {
     sampler = std::make_unique<Sampler>(data, width, height);
-}
-
-Matrix4x4 DrawAPI::getMatrix() const {
-    if (stack.empty()) {
-        return Matrix4x4::identity();
-    } else {
-        return stack.top();
-    }
 }
 
 DrawAPI::TransformWrapper DrawAPI::saveTransform() {

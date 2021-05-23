@@ -106,7 +106,7 @@ Scene Scene::parseObj(const std::string& contents) {
 
 void Scene::draw(DrawAPI& drawApi) {
     auto wrapper = drawApi.saveTransform();
-    drawApi.pushMatrix(transform);
+    drawApi.pushModelMatrix(transform);
     for (const auto& object : objects) {
         drawApi.addShapes(object.triangles);
     }

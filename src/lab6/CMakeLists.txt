@@ -6,10 +6,6 @@ set(EXE_SOURCES
         main.cpp
         MainWindow.h
         MainWindow.cpp
-        Model.cpp
-        Model.h
-        Polyline.cpp
-        Polyline.h
 )
 
 qt5_add_resources(EXE_RESOURCES main.qrc)

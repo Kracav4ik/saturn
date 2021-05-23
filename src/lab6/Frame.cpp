@@ -3,34 +3,28 @@
 #include <QDebug>
 #include <QDragMoveEvent>
 #include <QGuiApplication>
-
-void recallToFunc(const QPoint& pos, Frame* frame, void(Frame::*func)(const ll::Vector4&, bool, ll::Matrix4x4)) {
-    auto curQuery = QGuiApplication::queryKeyboardModifiers();
-    (frame->*func)(ll::Vector4::position(pos.x(), pos.y(), 0), (curQuery & Qt::ShiftModifier) != 0, frame->getViewProjection());
-}
+#include "OpenLL/Camera.h"
 
 Frame::Frame(QWidget* parent)
     : QGraphicsView(parent)
     , fb(640, 480)
+    , allowDrag(true)
+    , dragging(false)
+    , toScreen(ll::Matrix4x4::toScreenSpace(fb.getW(), fb.getH()))
 {
 }
 
-void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix4x4 frameRot, float angle) {
+void Frame::drawFrame(const ll::Color& bgColor, const ll::Matrix4x4& projection, const ll::Camera& camera, float elapsed) {
     drawAPi.reset();
 
-    drawAPi.clear(fb, ll::Color(0.7, 0.7, 0.7));
+    drawAPi.clear(fb, bgColor);
 
-    viewProjection = ll::Matrix4x4::toScreenSpace(fb.getW(), fb.getH())
-                     * projection
-                     * lookAt
-                     * ll::Matrix4x4::rotY(currRot.x() / 100.f) * ll::Matrix4x4::rotX(currRot.y() / 100.f)
-                     * frameRot;
+    viewProjection = projection * camera.getTransform();
 
-    drawAPi.pushMatrix(viewProjection);
+    drawAPi.setToScreenMatrix(toScreen);
+    drawAPi.setViewProjectionMatrix(viewProjection);
 
-    model->draw(drawAPi, viewProjection);
-
-    draw(drawAPi, angle);
+    draw(drawAPi, elapsed);
 
     drawAPi.drawFrame(fb);
 
@@ -44,6 +38,10 @@ void Frame::drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix
     show();
 }
 
+ll::Matrix4x4 Frame::getToScreen() const {
+    return toScreen;
+}
+
 ll::Matrix4x4 Frame::getViewProjection() const {
     return viewProjection;
 }
@@ -52,25 +50,12 @@ void Frame::setDrawer(DrawFunc drawFunc) {
     draw = std::move(drawFunc);
 }
 
-void Frame::setIsLight(bool light) {
-    isLight = light;
-}
-
-void Frame::reset() {
-    currRot = QPoint();
-}
-
 const ll::Framebuffer& Frame::getFb() {
     return fb;
 }
 
 void Frame::mousePressEvent(QMouseEvent* event) {
     dragging = true;
-    if ((event->buttons() & Qt::LeftButton) != 0) {
-        recallToFunc(event->pos(), this, &Frame::press);
-    } else if ((event->buttons() & Qt::RightButton) != 0) {
-        pressRight();
-    }
 }
 
 void Frame::mouseMoveEvent(QMouseEvent* event) {
@@ -79,23 +64,16 @@ void Frame::mouseMoveEvent(QMouseEvent* event) {
     auto prevMouseCameraPos = currentMouseCameraPos;
     currentMouseCameraPos = event->pos();
 
-    if (dragging && allowRot) {
+    if (dragging && allowDrag) {
         auto diff = currentMouseCameraPos - prevMouseCameraPos;
-        currRot += diff;
+        emit dragMove(diff.x(), diff.y());
     }
-
-    recallToFunc(event->pos(), this, &Frame::move);
 }
 
 void Frame::mouseReleaseEvent(QMouseEvent* event) {
     dragging = false;
-    release();
 }
 
-void Frame::setAllowDragging(bool allowDrag) {
-    allowRot = allowDrag;
-}
-
-void Frame::setModel(const std::shared_ptr<Model>& newModel) {
-    model = newModel;
+void Frame::setAllowDragging(bool allow) {
+    allowDrag = allow;
 }

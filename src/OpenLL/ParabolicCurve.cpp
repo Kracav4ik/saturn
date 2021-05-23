@@ -3,6 +3,7 @@
 #include "Framebuffer.h"
 #include "Fragment.h"
 #include "Matrix4x4.h"
+#include "DrawAPI.h"
 
 using namespace ll;
 
@@ -12,7 +13,7 @@ ParabolicCurve::ParabolicCurve(std::vector<Vector4> vertexes, bool solidColor, C
     , color(color)
 {}
 
-std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix4x4& transform, CullMode cull) const {
+std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrices& matrices, CullMode cull) const {
     auto frags = std::vector<Fragment>();
 
     auto Pt = [](float  t, const Vector4& p1, const Vector4& p2, const Vector4& p3) {
@@ -54,8 +55,9 @@ std::vector<Fragment> ParabolicCurve::getFragments(Framebuffer& fb, const Matrix
             } else {
                 p_t = (1 - t) * Pt(t, vertexes[i - 1], p2, p3) + t * Pt(t - 1, p2, p3, vertexes[i + 2]);
             }
-            auto point = (transform * p_t).toHomogenous();
-            frags.push_back({static_cast<int>(roundf(point.x)), static_cast<int>(roundf(point.y)), point.z, p_t, {}, selectedColor});
+            auto point = (matrices.fullTransform * p_t).toHomogenous();
+            auto world = (matrices.model * p_t).toHomogenous();
+            frags.push_back({static_cast<int>(roundf(point.x)), static_cast<int>(roundf(point.y)), point.z, world, {}, selectedColor});
         }
         colorIdx++;
     }

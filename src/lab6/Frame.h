@@ -1,12 +1,15 @@
 #pragma once
 
-#include "Model.h"
 #include "OpenLL/Framebuffer.h"
 #include "OpenLL/DrawAPI.h"
 
 #include <QGraphicsView>
 
-using DrawFunc = std::function<void(ll::DrawAPI& drawAPi, float angle)>;
+using DrawFunc = std::function<void(ll::DrawAPI& drawAPi, float elapsed)>;
+
+namespace ll {
+class Camera;
+}
 
 class Frame : public QGraphicsView {
 Q_OBJECT
@@ -14,36 +17,28 @@ Q_OBJECT
 public:
     explicit Frame(QWidget* parent);
 
-    void drawFrame(ll::Matrix4x4 projection, ll::Matrix4x4 lookAt, ll::Matrix4x4 frameRot, float angle);
+    void drawFrame(const ll::Color& bgColor, const ll::Matrix4x4& projection, const ll::Camera& camera, float elapsed);
+    ll::Matrix4x4 getToScreen() const;
     ll::Matrix4x4 getViewProjection() const;
     void setDrawer(DrawFunc drawFunc);
-    void setIsLight(bool light);
-    void reset();
     const ll::Framebuffer& getFb();
 
     void setAllowDragging(bool allowDragging);
 
-    void setModel(const std::shared_ptr<Model>& newModel);
-
 signals:
-    void press(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 commonMatrix);
-    void pressRight();
-    void move(const ll::Vector4& pos, bool withShift, ll::Matrix4x4 commonMatrix);
-    void release();
+    void dragMove(int dx, int dy);
 
 private:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
 
-    bool allowRot = true;
-    bool dragging = false;
-    bool isLight = false;
-    QPoint currRot;
+    ll::Framebuffer fb;
+    bool allowDrag;
+    bool dragging;
+    ll::Matrix4x4 toScreen;
     ll::Matrix4x4 viewProjection;
-    std::shared_ptr<Model> model;
     DrawFunc draw;
     ll::DrawAPI drawAPi;
-    ll::Framebuffer fb;
     QGraphicsScene scene;
 };

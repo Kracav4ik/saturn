@@ -1,6 +1,5 @@
 #include "Triangle.h"
 
-#include "Matrix4x4.h"
 #include "Sampler.h"
 #include "Framebuffer.h"
 #include "Fragment.h"
@@ -23,7 +22,7 @@ Triangle::Triangle(Vertex point0, Vertex point1, Vertex point2)
 {
 }
 
-std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matrix4x4& transform, CullMode cull) const {
+std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matrices& matrices, CullMode cull) const {
     std::vector<Fragment> frags;
 
     Color c[3] = {
@@ -33,9 +32,14 @@ std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matr
     };
 
     Vector4 v[3] = {
-            transform * points[0].pos,
-            transform * points[1].pos,
-            transform * points[2].pos,
+            matrices.fullTransform * points[0].pos,
+            matrices.fullTransform * points[1].pos,
+            matrices.fullTransform * points[2].pos,
+    };
+    Vector4 world[3] = {
+            matrices.model * points[0].pos,
+            matrices.model * points[1].pos,
+            matrices.model * points[2].pos,
     };
 
     auto makeUV4D = [&](int i) {
@@ -93,14 +97,14 @@ std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matr
                 w0 /= area;
                 w1 /= area;
                 w2 = 1 - w0 - w1;
-                Vector4 world = w0 * points[0].pos + w1 * points[1].pos + w2 * points[2].pos;
+                Vector4 worldPos = w0 * world[0] + w1 * world[1] + w2 * world[2];
                 Vector4 fragUV = (w0 * uv[0] + w1 * uv[1] + w2 * uv[2]).toHomogenous();
                 Vertex vert{
                         w0 * c[0] + w1 * c[1] + w2 * c[2],
                         w0 * v[0] + w1 * v[1] + w2 * v[2],
                         {fragUV.x, fragUV.y},
                 };
-                frags.push_back({x, y, vert.pos.z, world, vert.uv, vert.color});
+                frags.push_back({x, y, vert.pos.z, worldPos, vert.uv, vert.color});
             } else {
                 if (fragStarted) {
                     break;

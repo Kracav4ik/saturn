@@ -3,6 +3,7 @@
 #include "Fragment.h"
 #include "Framebuffer.h"
 #include "Matrix4x4.h"
+#include "DrawAPI.h"
 
 using namespace ll;
 
@@ -12,7 +13,7 @@ Line::Line(Vertex points0, Vertex points1)
 }
 
 
-std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrix4x4& transform, CullMode cull) const {
+std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrices& matrices, CullMode cull) const {
     std::vector<Fragment> frags;
 
     Color c[2] = {
@@ -21,8 +22,12 @@ std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrix4x4& trans
     };
 
     Vector4 v[2] = {
-            transform * points[0].pos,
-            transform * points[1].pos,
+            matrices.fullTransform * points[0].pos,
+            matrices.fullTransform * points[1].pos,
+    };
+    Vector4 world[2] = {
+            matrices.model * points[0].pos,
+            matrices.model * points[1].pos,
     };
 
     auto makeUV4D = [&](int i) {
@@ -46,7 +51,7 @@ std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrix4x4& trans
     }
 
     auto diff = (v[1] - v[0]);
-    auto diffWorld = (points[1].pos - points[0].pos);
+    auto diffWorld = (world[1] - world[0]);
 
     float width = std::abs(diff.x);
     float height = std::abs(diff.y);
@@ -56,12 +61,12 @@ std::vector<Fragment> Line::getFragments(Framebuffer& fb, const Matrix4x4& trans
     for (int i = 0; i <= n ; ++i) {
         float t = static_cast<float>(i)/static_cast<float>(n);
         Vector4 p = v[0] + t * diff;
-        Vector4 world = points[0].pos + t * diffWorld;
+        Vector4 worldPos = world[0] + t * diffWorld;
 
         Vector4 fragUV = ((1 - t) * uv[0] + t * uv[1]).toHomogenous();
         Color color = (1 - t) * c[0] + t * c[1];
 
-        frags.push_back({static_cast<int>(roundf(p.x)), static_cast<int>(roundf(p.y)), p.z, world, {fragUV.x, fragUV.y}, color});
+        frags.push_back({static_cast<int>(roundf(p.x)), static_cast<int>(roundf(p.y)), p.z, worldPos, {fragUV.x, fragUV.y}, color});
     }
 
     return frags;

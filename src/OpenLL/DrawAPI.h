@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Triangle.h"
 #include "Matrix4x4.h"
 #include "Sampler.h"
 #include "Shader.h"
@@ -16,6 +15,7 @@ namespace ll {
 class Framebuffer;
 struct ParabolicCurve;
 struct BezierSurface;
+class DrawAPI;
 
 enum class CullMode {
     DrawCW,
@@ -23,11 +23,21 @@ enum class CullMode {
     DrawBoth,
 };
 
+struct Matrices {
+    explicit Matrices(const DrawAPI& drawApi);
+    Matrices();
+
+    Matrix4x4 toScreen;
+    Matrix4x4 viewProjection;
+    Matrix4x4 model;
+    Matrix4x4 fullTransform;
+};
+
 struct DrawCall {
     template<typename T>
-    DrawCall(const std::vector<T>& vec, Shader shader, Matrix4x4 transform, CullMode cull)
+    DrawCall(const std::vector<T>& vec, Shader shader, const Matrices& matrices, CullMode cull)
         : shader(std::move(shader))
-        , transform(std::move(transform))
+        , matrices(matrices)
         , cull(cull)
     {
         objects.reserve(vec.size());
@@ -36,12 +46,12 @@ struct DrawCall {
         }
     }
 
-    DrawCall();
+    DrawCall() = default;
 
     std::vector<std::unique_ptr<Shape>> objects;
     Shader shader;
-    Matrix4x4 transform;
-    CullMode cull;
+    Matrices matrices;
+    CullMode cull = CullMode::DrawBoth;
 };
 
 class DrawAPI {
@@ -55,21 +65,29 @@ class DrawAPI {
         TransformWrapper operator=(TransformWrapper&&) = delete;
 
         ~TransformWrapper() {
-            std::swap(drawApi.stack, savedStack);
+            std::swap(drawApi.modelStack, savedStack);
+            drawApi.toScreenMatrix = savedToScreen;
+            drawApi.viewProjectionMatrix = savedViewProjection;
         }
 
     private:
         explicit TransformWrapper(DrawAPI& drawApi)
                 : drawApi(drawApi)
-                , savedStack(drawApi.stack)
+                , savedStack(drawApi.modelStack)
+                , savedToScreen(drawApi.toScreenMatrix)
+                , savedViewProjection(drawApi.viewProjectionMatrix)
         {
         }
 
-        std::stack<Matrix4x4> savedStack;
         DrawAPI& drawApi;
+        std::stack<Matrix4x4> savedStack;
+        Matrix4x4 savedToScreen;
+        Matrix4x4 savedViewProjection;
     };
 
 public:
+    DrawAPI();
+
     void setFragmentShader(Shader shader);
     void setCullMode(CullMode cullMode);
 
@@ -82,7 +100,7 @@ public:
         typename = std::enable_if_t<std::is_base_of_v<Shape, T>>
     >
     void addShapes(const std::vector<T>& shapes) {
-        drawCalls.emplace_back(shapes, fragmentShader, getMatrix(), cull);
+        drawCalls.emplace_back(shapes, fragmentShader, Matrices(*this), cull);
     }
     void drawRound(const Vertex& center, float radius, bool isSolid);
     void drawLinesCube(const Vector4& center, float size, Color color);
@@ -91,11 +109,18 @@ public:
 
     void drawFrame(Framebuffer& fb) const;
 
-    void loadIdentity();
-    void pushMatrix(const Matrix4x4& mat);
-    void popMatrix();
+    void loadModelIdentity();
+    void pushModelMatrix(const Matrix4x4& mat);
+    void popModelMatrix();
+    Matrix4x4 getModelMatrix() const;
+
+    void setToScreenMatrix(const Matrix4x4& mat);
+    Matrix4x4 getToScreenMatrix() const;
+
+    void setViewProjectionMatrix(const Matrix4x4& mat);
+    Matrix4x4 getViewProjectionMatrix() const;
+
     void loadTexture(const uint32_t* data, int width, int height);
-    Matrix4x4 getMatrix() const;
 
     TransformWrapper saveTransform();
     static std::vector<ll::Vector4> getCubeVexes(const Vector4& center, float size);
@@ -105,8 +130,9 @@ private:
     Shader fragmentShader;
     CullMode cull = CullMode::DrawBoth;
     std::vector<DrawCall> drawCalls;
-    std::stack<Matrix4x4> stack;
-    std::shared_ptr<Framebuffer> lightFB;
+    std::stack<Matrix4x4> modelStack;
+    Matrix4x4 toScreenMatrix;
+    Matrix4x4 viewProjectionMatrix;
 };
 
 }

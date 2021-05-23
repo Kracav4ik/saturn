@@ -14,6 +14,10 @@ struct Color {
 
     bool isDiscard() const;
 
+    static Color greyscale(float v) {
+        return Color(v, v, v);
+    }
+
     static const Color DISCARD;
 };
 
