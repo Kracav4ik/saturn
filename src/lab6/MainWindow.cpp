@@ -20,12 +20,21 @@ MainWindow::MainWindow() {
     timer.setInterval(50);
     timer.start();
 
-    cam.move(0, 2, 5);
+    static float elapsed = 0;
 
     static ll::Camera sunCam;
+    static auto sunColor = ll::Color::greyscale(1);
 
     static const float sunRotX = -M_PI / 4;
     static float sunRotY;
+
+    auto resetFunc = [this]() {
+        cam.reset();
+        cam.move(0, 1.5, 4);
+        cam.rotateX(-0.25);
+        elapsed = 0;
+    };
+    resetFunc();
 
     drawArea2->setAllowDragging(false);
     connect(drawArea1, &Frame::dragMove, [this](int dx, int dy) {
@@ -33,9 +42,19 @@ MainWindow::MainWindow() {
         cam.rotateY(dx / 1000.f);
     });
 
-    connect(reset, &QPushButton::clicked, [this]() {
-        cam.reset();
-        cam.move(0, 2, 5);
+    connect(reset, &QPushButton::clicked, resetFunc);
+
+    connect(rbWhite, &QPushButton::clicked, []() {
+        sunColor = ll::Color(1, 1, 1);
+    });
+    connect(rbRed, &QPushButton::clicked, []() {
+        sunColor = ll::Color(1, 0.25, 0.25);
+    });
+    connect(rbGreen, &QPushButton::clicked, []() {
+        sunColor = ll::Color(0.25, 1, 0.25);
+    });
+    connect(rbBlue, &QPushButton::clicked, []() {
+        sunColor = ll::Color(0.25, 0.25, 1);
     });
 
     connect(zoomSB, &QDoubleSpinBox::textChanged, [this]() {
@@ -51,11 +70,33 @@ MainWindow::MainWindow() {
                 return ll::Color(1, 0, 1);
             }
 
-            float delta = 0.01;
-            if (lightFrag.z < drawArea2->getFb().getZ(xx, yy) + delta) {
-                return frag.color;
+            auto color = ll::Color::greyscale(0);
+            if (cbAmbient->isChecked()) {
+                float ambient = 0.1;
+                color = ambient * mul(sunColor, frag.color);
             }
-            return ll::Color(0, 0, 0);
+
+            auto lightDirection = (sunCam.getPos() - frag.world).normalized();
+            float diffuseCo = ll::dot(frag.normal, lightDirection);
+
+            float delta = 0.002 + 0.05*(1 - diffuseCo);
+
+            if (!cbShadow->isChecked() || (lightFrag.z < drawArea2->getFb().getZ(xx, yy) + delta)) {
+                if (cbDiffuse->isChecked()) {
+                    color = color + diffuseCo * mul(sunColor, frag.color);
+                }
+
+                if (cbSpecular->isChecked()) {
+                    auto reflected = ll::reflect(-lightDirection, frag.normal).normalized();
+                    auto eyeDirection = (cam.getPos() - frag.world).normalized();
+                    float specularCo = 0.5 * std::pow(std::max(0.f, ll::dot(reflected, eyeDirection)), 60);
+
+                    color = color + specularCo * sunColor;
+                }
+            }
+            color.a = 1;
+            
+            return color;
         });
 
         scene.draw(drawAPi);
@@ -69,11 +110,11 @@ MainWindow::MainWindow() {
             drawAPi.pushModelMatrix(ll::Matrix4x4::translation(sunCam.getPos()));
             drawAPi.pushModelMatrix(ll::Matrix4x4::rotY(sunRotY));
             drawAPi.pushModelMatrix(ll::Matrix4x4::rotX(sunRotX));
-            drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.2, ll::Color(1, 1, 1));
+            drawAPi.drawCube(ll::Vector4::position(0, 0, 0), 0.2, sunColor);
             drawAPi.drawLinesCube(ll::Vector4::position(0, 0, 0), 0.2007, ll::Color(0, 0, 0));
         }
 
-        {
+        if (cbFrustum->isChecked()) {
             auto wrapper = drawAPi.saveTransform();
             drawAPi.pushModelMatrix(drawArea2->getViewProjection().inverse());
             drawAPi.drawLinesCube(ll::Vector4::position(0, 0, 0), 2, ll::Color(1, 0, 1));
@@ -127,14 +168,13 @@ MainWindow::MainWindow() {
         }
 
 
-        static float elapsed = 0;
         using namespace std::chrono;
         auto start = high_resolution_clock::now();
 
-        auto perspective =  ll::Matrix4x4::perspective(M_PI / 2 / std::pow(1.3, zoomSB->value()), 320.f / 240.f, 0.1, 20);
+        auto perspective =  ll::Matrix4x4::perspective(M_PI / 2 / std::pow(1.3, zoomSB->value()), 320.f / 240.f, 0.5, 7);
 
         sunRotY = -M_PI * elapsed * 0.1;
-        auto sunPos = ll::Matrix4x4::translation(0, 1.45, 0) * ll::Matrix4x4::rotY(sunRotY) * ll::Vector4::position(0, 0, 1);
+        auto sunPos = ll::Matrix4x4::translation(0, 1.5, 0) * ll::Matrix4x4::rotY(sunRotY) * ll::Vector4::position(0, 0, 1);
         sunCam.reset();
         sunCam.moveTo(sunPos);
         sunCam.rotateX(sunRotX);
@@ -142,12 +182,25 @@ MainWindow::MainWindow() {
 
         auto sunPerspective = ll::Matrix4x4::perspective(M_PI / 3, 320.f / 240.f, 0.5, 2.75);
 
+        auto propCenter = ll::Vector4::direction(-0.0793673, 0.819124, -0.150503);
+        float propRot = -2.65635458f;
+        scene.setLocalTransform(
+                "propeller",
+                ll::Matrix4x4::translation(propCenter)
+                * ll::Matrix4x4::rotY(propRot)
+                * ll::Matrix4x4::rotX(M_PI*sunRotY)
+                * ll::Matrix4x4::rotY(-propRot)
+                * ll::Matrix4x4::translation(-propCenter)
+        );
+
         drawArea2->drawFrame(ll::Color::greyscale(0), sunPerspective, sunCam, elapsed);
         drawArea1->drawFrame(ll::Color::greyscale(0.7), perspective, cam, elapsed);
 
         auto stop = high_resolution_clock::now();
-        qDebug() << "time spent" << duration_cast<microseconds>(stop - start).count();
-        elapsed += 0.02;
+//        qDebug() << "time spent" << duration_cast<microseconds>(stop - start).count();
+        if (cbAnimate->isChecked()) {
+            elapsed += 0.02;
+        }
     });
 }
 

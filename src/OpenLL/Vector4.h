@@ -102,6 +102,10 @@ inline Vector4 cross(const Vector4& v1, const Vector4& v2) {
     return {subCross(1, 2), subCross(2, 0), subCross(0, 1)};
 }
 
+inline Vector4 reflect(const Vector4& fallingRay, const Vector4& normal) {
+    return fallingRay + 2*dot(-fallingRay, normal)*normal;
+}
+
 inline std::ostream& operator<<(std::ostream& ostream, const Vector4& v) {
     return ostream << "{ " << "x: " << v.x << "; y: " << v.y << "; z: " << v.z << "; w: " << v.w << "; }";
 }

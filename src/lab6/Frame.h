@@ -21,6 +21,7 @@ public:
     ll::Matrix4x4 getToScreen() const;
     ll::Matrix4x4 getViewProjection() const;
     void setDrawer(DrawFunc drawFunc);
+    void setCullMode(ll::CullMode cullMode);
     const ll::Framebuffer& getFb();
 
     void setAllowDragging(bool allowDragging);

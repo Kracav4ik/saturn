@@ -50,6 +50,10 @@ void Frame::setDrawer(DrawFunc drawFunc) {
     draw = std::move(drawFunc);
 }
 
+void Frame::setCullMode(ll::CullMode cullMode) {
+    drawAPi.setCullMode(cullMode);
+}
+
 const ll::Framebuffer& Frame::getFb() {
     return fb;
 }

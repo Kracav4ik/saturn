@@ -42,6 +42,8 @@ std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matr
             matrices.model * points[2].pos,
     };
 
+    auto normal = cross(world[1] - world[0], world[2] - world[0]).normalized().asDirection();
+
     auto makeUV4D = [&](int i) {
         const auto& uv = points[i].uv;
         float w = v[i].w;
@@ -104,7 +106,7 @@ std::vector<Fragment> Triangle::getFragments(ll::Framebuffer& fb, const ll::Matr
                         w0 * v[0] + w1 * v[1] + w2 * v[2],
                         {fragUV.x, fragUV.y},
                 };
-                frags.push_back({x, y, vert.pos.z, worldPos, vert.uv, vert.color});
+                frags.push_back({x, y, vert.pos.z, worldPos, vert.uv, vert.color, normal});
             } else {
                 if (fragStarted) {
                     break;

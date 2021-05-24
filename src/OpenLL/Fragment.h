@@ -13,6 +13,7 @@ struct Fragment {
     Vector4 world;
     Vector2 uv;
     Color color;
+    Vector4 normal;
 };
 
 }

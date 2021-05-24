@@ -61,7 +61,7 @@ Scene Scene::parseObj(const std::string& contents) {
         }},
         {"vn", [&](const std::string& toParse) {}},
         {"o", [&](const std::string& toParse) {
-            result.objects.push_back({toParse, {}});
+            result.objects.push_back({toParse, {}, Matrix4x4::identity()});
         }},
         {"v", [&](const std::string& toParse) {
             auto coords = split(toParse, " ");
@@ -108,10 +108,20 @@ void Scene::draw(DrawAPI& drawApi) {
     auto wrapper = drawApi.saveTransform();
     drawApi.pushModelMatrix(transform);
     for (const auto& object : objects) {
+        auto wrapperLocal = drawApi.saveTransform();
+        drawApi.pushModelMatrix(object.transform);
         drawApi.addShapes(object.triangles);
     }
 }
 
 void Scene::setTransform(const Matrix4x4& t) {
     transform = t;
+}
+
+void Scene::setLocalTransform(const std::string& name, const Matrix4x4& t) {
+    for (auto& object : objects) {
+        if (object.name == name) {
+            object.transform = t;
+        }
+    }
 }

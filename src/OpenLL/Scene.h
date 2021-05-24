@@ -14,11 +14,13 @@ public:
     static Scene parseObj(const std::string& contents);
     void draw(DrawAPI& drawApi);
     void setTransform(const Matrix4x4& t);
+    void setLocalTransform(const std::string& name, const Matrix4x4& t);
 
 private:
     struct SceneObject {
         std::string name;
         std::vector<Triangle> triangles;
+        Matrix4x4 transform;
     };
 
     std::vector<SceneObject> objects;
